@@ -68,9 +68,9 @@
 
         <button 
           @click="goToToday" 
-          class="w-full mb-4 py-1.5 border border-slate-200 rounded-lg text-[9px] font-black text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all uppercase tracking-[0.2em]"
+          class="mx-auto block mb-4 px-4 py-1 border border-slate-200 rounded-lg text-[9px] font-black text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all uppercase tracking-[0.1em]"
         >
-          Jump to Today
+          Today
         </button>
 
         <div class="grid grid-cols-7 text-center text-[10px] font-black text-slate-300 mb-2">
