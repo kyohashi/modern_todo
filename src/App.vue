@@ -91,11 +91,10 @@
     <main class="flex-1 p-12 overflow-y-auto">
       
       <section class="mb-12">
-        <h2 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-4 px-2 italic">Deep Focus Mode</h2>
         <draggable 
           v-model="focusList" group="tasks" item-key="id"
-          class="min-h-[400px] rounded-[3rem] border-4 border-dashed border-slate-300 flex items-center justify-center p-12 transition-all duration-700 relative overflow-hidden"
-          :class="{ 'bg-slate-900 border-none shadow-2xl': focusList.length > 0 }"
+          class="rounded-[3rem] border-4 border-dashed border-slate-300 flex items-center justify-center p-8 transition-all duration-700 relative overflow-hidden"
+          :class="focusList.length > 0 ? 'min-h-[450px] bg-slate-900 border-none shadow-2xl' : 'min-h-[180px] bg-slate-200/50'"
         >
           <template #item="{ element }">
             <div class="w-full max-w-3xl text-center space-y-12 z-20">
@@ -124,9 +123,8 @@
           </template>
 
           <template #header v-if="focusList.length === 0">
-            <div class="text-center opacity-30 select-none cursor-default">
-              <p class="text-slate-400 font-black text-4xl tracking-tighter">DRAG A TASK TO FOCUS</p>
-              <p class="text-slate-400 text-[10px] mt-4 font-bold uppercase tracking-[0.5em]">Finish one thing at a time</p>
+            <div class="text-center opacity-40 select-none cursor-default">
+              <p class="text-slate-500 font-black text-xl tracking-tight uppercase">DRAG A TASK HERE TO FOCUS</p>
             </div>
           </template>
 
@@ -174,8 +172,8 @@ import { ref, computed, onMounted, watch } from 'vue'
 import draggable from 'vuedraggable'
 
 /**
- * FOCUS HUB v6.5 - UNIVERSITY DESK EDITION
- * Updated with Logout Fix, Desk Aesthetic, and High Contrast UI.
+ * FOCUS HUB v6.6 - UNIVERSITY DESK EDITION (Adjusted Layout)
+ * Updated: Dynamic Focus Zone height for better visibility of backlog.
  */
 
 // --- AUTH STATE & LOGIC ---
