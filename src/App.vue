@@ -28,9 +28,17 @@
 
   <div v-else class="flex min-h-screen bg-[#ecebe4] text-slate-800 font-sans selection:bg-indigo-100">
     <aside class="w-80 bg-[#f9f8f3] border-r border-slate-300 p-8 flex flex-col gap-10 sticky top-0 h-screen overflow-y-auto z-20">
-      <div>
-        <h1 class="text-2xl font-black text-slate-800 tracking-tighter italic">FOCUS HUB</h1>
-        <p class="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mt-1">{{ authForm.username }}'s Workspace</p>
+      <div class="flex flex-col gap-1">
+        <h1 class="text-2xl font-black text-slate-800 tracking-tighter italic leading-none">FOCUS HUB</h1>
+        <div class="flex items-center gap-3 mt-3 bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+          <div class="bg-indigo-600 text-white w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black shadow-md shrink-0">
+            {{ currentUser.charAt(0).toUpperCase() }}
+          </div>
+          <div class="flex flex-col overflow-hidden">
+            <p class="text-[8px] text-slate-400 font-black uppercase tracking-widest leading-none mb-0.5">Logged in as</p>
+            <p class="text-xs text-slate-700 font-black uppercase truncate tracking-tight">{{ currentUser }}</p>
+          </div>
+        </div>
       </div>
 
       <div class="calendar-container bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
@@ -168,16 +176,19 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import draggable from 'vuedraggable'
 
-// --- AUTH STATE & LOGIC ---
+// --- AUTH STATE & PERSISTENCE ---
 const isLoggedIn = ref(false)
 const isLoginMode = ref(true)
 const authError = ref('')
 const authForm = ref({ username: '', password: '' })
 const token = ref(localStorage.getItem('pilot_token'))
+// Stores current username for sidebar display
+const currentUser = ref(localStorage.getItem('pilot_username') || '')
 
 // --- UI STATE ---
 const editingTimeId = ref(null)
 
+// Custom directive for auto-focusing elements when they appear
 const vFocus = {
   mounted: (el) => el.focus()
 }
@@ -201,7 +212,9 @@ const handleAuth = async (action) => {
       } else {
         const data = await res.json();
         token.value = data.token;
+        currentUser.value = authForm.value.username;
         localStorage.setItem('pilot_token', data.token);
+        localStorage.setItem('pilot_username', currentUser.value);
         isLoggedIn.value = true;
         authError.value = '';
         fetchTodos();
@@ -215,8 +228,10 @@ const handleAuth = async (action) => {
 const logout = () => {
   if (confirm("Sign out and clear local session?")) {
     localStorage.removeItem('pilot_token');
+    localStorage.removeItem('pilot_username');
     isLoggedIn.value = false;
     token.value = null;
+    currentUser.value = '';
     todos.value = [];
     authForm.value = { username: '', password: '' };
     window.location.reload();
@@ -321,10 +336,10 @@ const finishFocus = (todo) => {
 
 const deleteTodo = (id) => { if (confirm("Remove task?")) saveTodos(todos.value.filter(t => t.id !== id)) }
 
-// --- UPDATED TIMER LOGIC ---
+// --- TIMER LOGIC (Resumes from accumulated progress) ---
 const updateElapsedDisplay = (task) => {
   const diff = new Date() - new Date(task.focusStartedAt)
-  // Logic: Accumulated time (totalFocusMinutes) + Current session time
+  // Logic: Accumulated total minutes + current session minutes
   const totalMinutes = (task.totalFocusMinutes || 0) + Math.floor(diff / 60000)
   elapsedTime.value = `${totalMinutes} min`
   seconds.value = Math.floor((diff / 1000) % 60)
@@ -334,8 +349,7 @@ const startTimer = () => {
   stopTimer()
   if (focusList.value.length > 0) {
     const task = focusList.value[0]
-    // Set initial display immediately to prevent "0 min" flickering
-    updateElapsedDisplay(task)
+    updateElapsedDisplay(task) // Initial display update
     
     timerInterval = setInterval(() => {
       updateElapsedDisplay(task)
@@ -365,6 +379,7 @@ onMounted(() => {
 .auth-input { @apply w-full bg-slate-50 border border-slate-300 rounded-xl px-6 py-4 text-slate-800 text-lg focus:ring-2 focus:ring-slate-800 outline-none transition-all; }
 .timer-display { font-variant-numeric: tabular-nums; }
 
+/* Visual tilt for sticky note effect */
 .post-it { transform: rotate(-1.5deg); }
 .post-it:nth-child(even) { transform: rotate(1.2deg); }
 .post-it:hover { transform: rotate(0deg) translateY(-15px) !important; z-index: 10; }
