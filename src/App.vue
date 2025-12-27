@@ -1,7 +1,7 @@
 <template>
   <div v-if="!isLoggedIn" class="min-h-screen bg-[#f3f4f6] flex items-center justify-center p-6 relative">
     <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/5 pointer-events-none"></div>
-    <div class="max-w-md w-full z-10 space-y-8 p-10 rounded-2xl bg-white border border-slate-300 shadow-2xl">
+    <div class="max-w-md w-full z-10 space-y-8 p-8 md:p-10 rounded-2xl bg-white border border-slate-300 shadow-2xl">
       <div class="text-center">
         <h1 class="text-3xl font-black text-slate-800 tracking-tighter uppercase italic">Focus Hub</h1>
         <div class="flex justify-center gap-4 mt-6 p-1 bg-slate-100 rounded-xl">
@@ -26,10 +26,28 @@
     </div>
   </div>
 
-  <div v-else class="flex min-h-screen bg-[#ecebe4] text-slate-800 font-sans selection:bg-indigo-100">
-    <aside class="w-80 bg-[#f9f8f3] border-r border-slate-300 p-8 flex flex-col gap-10 sticky top-0 h-screen overflow-y-auto z-20">
-      <div class="flex flex-col gap-1">
-        <h1 class="text-2xl font-black text-slate-800 tracking-tighter italic leading-none">FOCUS HUB</h1>
+  <div v-else class="flex flex-col md:flex-row min-h-screen bg-[#ecebe4] text-slate-800 font-sans selection:bg-indigo-100">
+    
+    <header class="md:hidden flex items-center justify-between p-4 bg-[#f9f8f3] border-b border-slate-300 sticky top-0 z-30">
+      <div class="flex items-center gap-2">
+        <h1 class="text-xl font-black text-slate-800 tracking-tighter italic leading-none">FOCUS HUB</h1>
+      </div>
+      <button @click="isSidebarOpen = !isSidebarOpen" class="p-2 text-slate-600 hover:bg-slate-200 rounded-lg transition-colors">
+        <svg v-if="!isSidebarOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
+        <svg v-else class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+    </header>
+
+    <aside 
+      class="fixed inset-y-0 left-0 w-80 bg-[#f9f8f3] border-r border-slate-300 p-8 flex flex-col gap-10 z-40 transform transition-transform duration-300 ease-in-out md:relative md:transform-none md:translate-x-0 shadow-2xl md:shadow-none"
+      :class="isSidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+    >
+      <button @click="isSidebarOpen = false" class="absolute top-4 right-4 md:hidden p-2 text-slate-400">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <div class="flex flex-col gap-1 mt-8 md:mt-0">
+        <h1 class="text-2xl font-black text-slate-800 tracking-tighter italic leading-none hidden md:block">FOCUS HUB</h1>
         <div class="flex items-center gap-3 mt-3 bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
           <div class="bg-indigo-600 text-white w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black shadow-md shrink-0">
             {{ currentUser.charAt(0).toUpperCase() }}
@@ -54,7 +72,7 @@
         </div>
         <div class="grid grid-cols-7 gap-1">
           <div v-for="n in calendarPadding" :key="'pad-'+n"></div>
-          <button v-for="day in daysInMonth" :key="day" @click="selectedDate = formatDate(currentYear, currentMonth, day)" class="h-8 w-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all" :class="isDateSelected(day) ? 'bg-indigo-600 text-white shadow-md scale-110' : 'hover:bg-slate-100 text-slate-600'">
+          <button v-for="day in daysInMonth" :key="day" @click="selectedDate = formatDate(currentYear, currentMonth, day); isSidebarOpen = false" class="h-8 w-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all" :class="isDateSelected(day) ? 'bg-indigo-600 text-white shadow-md scale-110' : 'hover:bg-slate-100 text-slate-600'">
             {{ day }}
           </button>
         </div>
@@ -71,37 +89,39 @@
       </div>
     </aside>
 
-    <main class="flex-1 p-12 overflow-y-auto">
-      <section class="mb-12">
-        <draggable v-model="focusList" group="tasks" item-key="id" class="rounded-[3rem] border-4 border-dashed border-slate-300 flex items-center justify-center p-8 transition-all duration-700 relative overflow-hidden" :class="focusList.length > 0 ? 'min-h-[450px] bg-slate-900 border-none shadow-2xl' : 'min-h-[180px] bg-slate-200/50'">
+    <div v-if="isSidebarOpen" @click="isSidebarOpen = false" class="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 md:hidden"></div>
+
+    <main class="flex-1 p-4 md:p-12 overflow-y-auto w-full">
+      <section class="mb-8 md:mb-12">
+        <draggable v-model="focusList" group="tasks" item-key="id" class="rounded-[2rem] md:rounded-[3rem] border-4 border-dashed border-slate-300 flex items-center justify-center p-4 md:p-8 transition-all duration-700 relative overflow-hidden" :class="focusList.length > 0 ? 'min-h-[350px] md:min-h-[450px] bg-slate-900 border-none shadow-2xl' : 'min-h-[150px] md:min-h-[180px] bg-slate-200/50'">
           <template #item="{ element }">
-            <div class="w-full max-w-3xl text-center space-y-12 z-20">
-              <div class="absolute top-12 left-12 animate-float opacity-80 pointer-events-none">
-                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <div class="w-full max-w-3xl text-center space-y-6 md:space-y-12 z-20">
+              <div class="absolute top-6 left-6 md:top-12 md:left-12 animate-float opacity-80 pointer-events-none">
+                <svg class="w-10 h-10 md:w-[60px] md:h-[60px]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M12 2V6M12 6C8.686 6 6 8.686 6 12V22H18V12C18 8.686 15.314 6 12 6Z" stroke="#818cf8" stroke-width="2" stroke-linecap="round"/>
                   <circle cx="12" cy="12" r="2" fill="#818cf8"/>
                 </svg>
-                <div class="text-[8px] font-black text-indigo-400 mt-2 tracking-widest uppercase">System Active</div>
+                <div class="text-[6px] md:text-[8px] font-black text-indigo-400 mt-2 tracking-widest uppercase">System Active</div>
               </div>
-              <div class="relative flex items-center justify-center py-10">
-                <svg class="absolute w-[30rem] h-[30rem] pointer-events-none opacity-20" viewBox="0 0 100 100">
+              <div class="relative flex items-center justify-center py-4 md:py-10">
+                <svg class="absolute w-[20rem] h-[20rem] md:w-[30rem] md:h-[30rem] pointer-events-none opacity-20" viewBox="0 0 100 100">
                   <circle cx="50" cy="50" r="40" stroke="white" stroke-width="0.5" fill="none" />
                   <circle cx="50" cy="10" r="1.5" fill="#818cf8" class="transition-transform duration-1000 ease-linear" :style="{ transform: `rotate(${seconds * 6}deg)`, transformOrigin: '50px 50px' }" />
                 </svg>
-                <div class="timer-display font-mono text-[10rem] font-black tracking-tighter text-white drop-shadow-2xl leading-none relative z-10">
+                <div class="timer-display font-mono text-6xl md:text-[10rem] font-black tracking-tighter text-white drop-shadow-2xl leading-none relative z-10">
                   {{ elapsedTime }}
                 </div>
               </div>
-              <div class="space-y-4">
-                <textarea v-model="element.text" @change="saveTodos(todos)" rows="1" class="bg-transparent border-none text-center text-5xl font-black w-full focus:ring-0 text-white resize-none leading-tight overflow-hidden"></textarea>
-                <textarea v-model="element.notes" @change="saveTodos(todos)" placeholder="Mission details..." class="bg-white/5 border border-white/10 rounded-2xl p-6 w-full text-center text-slate-300 text-lg focus:ring-2 focus:ring-indigo-500/30 outline-none h-28 resize-none transition-all"></textarea>
+              <div class="space-y-2 md:space-y-4">
+                <textarea v-model="element.text" @change="saveTodos(todos)" rows="1" class="bg-transparent border-none text-center text-3xl md:text-5xl font-black w-full focus:ring-0 text-white resize-none leading-tight overflow-hidden"></textarea>
+                <textarea v-model="element.notes" @change="saveTodos(todos)" placeholder="Mission details..." class="bg-white/5 border border-white/10 rounded-xl md:rounded-2xl p-4 md:p-6 w-full text-center text-slate-300 text-sm md:text-lg focus:ring-2 focus:ring-indigo-500/30 outline-none h-20 md:h-28 resize-none transition-all"></textarea>
               </div>
-              <button @click="finishFocus(element)" class="bg-indigo-600 hover:bg-indigo-500 text-white font-black px-16 py-7 rounded-2xl transition-all text-xl uppercase tracking-widest shadow-xl active:scale-95">Complete Mission</button>
+              <button @click="finishFocus(element)" class="bg-indigo-600 hover:bg-indigo-500 text-white font-black px-10 py-5 md:px-16 md:py-7 rounded-xl md:rounded-2xl transition-all text-sm md:text-xl uppercase tracking-widest shadow-xl active:scale-95 w-full md:w-auto">Complete Mission</button>
             </div>
           </template>
           <template #header v-if="focusList.length === 0">
             <div class="text-center opacity-40 select-none cursor-default">
-              <p class="text-slate-500 font-black text-xl tracking-tight uppercase">DRAG A TASK HERE TO FOCUS</p>
+              <p class="text-slate-500 font-black text-sm md:text-xl tracking-tight uppercase">DRAG A TASK HERE TO FOCUS</p>
             </div>
           </template>
           <div v-if="focusList.length > 0" class="absolute inset-0 z-0 bg-gradient-to-tr from-slate-900 via-indigo-900/10 to-slate-900">
@@ -110,34 +130,34 @@
         </draggable>
       </section>
 
-      <div class="flex gap-4 mb-20">
-        <input v-model="newTodo" @keydown.enter="handleInputEnter" placeholder="What's next on the list?" class="flex-1 bg-white border border-slate-300 rounded-2xl px-10 py-7 shadow-sm text-2xl font-medium focus:ring-8 focus:ring-indigo-500/5 transition-all outline-none" />
-        <button @click="addTodo" class="bg-slate-800 text-white font-black px-14 py-7 rounded-2xl hover:bg-slate-900 transition-all text-xl shadow-lg">ADD TASK</button>
+      <div class="flex flex-col md:flex-row gap-4 mb-10 md:mb-20">
+        <input v-model="newTodo" @keydown.enter="handleInputEnter" placeholder="What's next?" class="flex-1 bg-white border border-slate-300 rounded-xl md:rounded-2xl px-6 py-5 md:px-10 md:py-7 shadow-sm text-lg md:text-2xl font-medium focus:ring-8 focus:ring-indigo-500/5 transition-all outline-none" />
+        <button @click="addTodo" class="bg-slate-800 text-white font-black px-8 py-5 md:px-14 md:py-7 rounded-xl md:rounded-2xl hover:bg-slate-900 transition-all text-sm md:text-xl shadow-lg active:scale-95">ADD</button>
       </div>
 
-      <section>
-        <h2 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-10 px-4 italic">Backlog: {{ selectedDate }}</h2>
-        <draggable v-model="backlogList" group="tasks" item-key="id" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+      <section class="pb-20">
+        <h2 class="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-6 md:mb-10 px-2 italic">Backlog: {{ selectedDate }}</h2>
+        <draggable v-model="backlogList" group="tasks" item-key="id" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8">
           <template #item="{ element }">
-            <div class="post-it group p-8 rounded-lg shadow-md cursor-grab active:cursor-grabbing transition-all hover:shadow-xl hover:-translate-y-3 flex flex-col min-h-[280px] relative border-b-4 border-black/10" :class="element.completed ? 'bg-slate-200 opacity-60 grayscale' : 'bg-[#fff9c4]'">
+            <div class="post-it group p-6 md:p-8 rounded-lg shadow-md cursor-grab active:cursor-grabbing transition-all hover:shadow-xl hover:-translate-y-3 flex flex-col min-h-[260px] md:min-h-[280px] relative border-b-4 border-black/10" :class="element.completed ? 'bg-slate-200 opacity-60 grayscale' : 'bg-[#fff9c4]'">
               <div class="flex items-start justify-between mb-4">
-                <input type="checkbox" :checked="element.completed" @change="toggleTodo(element)" class="w-7 h-7 rounded border-slate-400 bg-white text-indigo-600 focus:ring-0 appearance-none border-2 checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer shadow-sm" />
-                <button @click="deleteTodo(element.id)" class="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-red-500 transition-all"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg></button>
+                <input type="checkbox" :checked="element.completed" @change="toggleTodo(element)" class="w-6 h-6 md:w-7 md:h-7 rounded border-slate-400 bg-white text-indigo-600 focus:ring-0 appearance-none border-2 checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer shadow-sm" />
+                <button @click="deleteTodo(element.id)" class="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2 text-slate-400 hover:text-red-500 transition-all"><svg class="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg></button>
               </div>
               <div class="flex-1 flex flex-col gap-2">
                 <textarea 
                   v-model="element.text" 
                   @change="saveTodos(todos)" 
                   rows="2"
-                  class="font-black text-xl bg-transparent border-none p-0 focus:ring-0 w-full text-slate-900 resize-none leading-tight overflow-hidden" 
+                  class="font-black text-lg md:text-xl bg-transparent border-none p-0 focus:ring-0 w-full text-slate-900 resize-none leading-tight overflow-hidden" 
                   :class="{ 'line-through text-slate-400': element.completed }"
                 ></textarea>
-                <textarea v-model="element.notes" @change="saveTodos(todos)" placeholder="Notes..." class="text-xs text-yellow-900/60 bg-white/30 border-none rounded-xl p-3 w-full h-24 resize-none focus:ring-1 focus:ring-yellow-300 outline-none transition-all"></textarea>
+                <textarea v-model="element.notes" @change="saveTodos(todos)" placeholder="Notes..." class="text-xs text-yellow-900/60 bg-white/30 border-none rounded-xl p-3 w-full h-20 md:h-24 resize-none focus:ring-1 focus:ring-yellow-300 outline-none transition-all"></textarea>
               </div>
               
               <div class="mt-4 flex items-end justify-between border-t border-black/5 pt-4">
                 <div class="flex flex-col relative">
-                  <span class="text-[9px] font-black text-slate-400 uppercase tracking-tighter italic mb-1">Focus Log</span>
+                  <span class="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-tighter italic mb-1">Focus Log</span>
                   
                   <button 
                     @click="editingTimeId = element.id"
@@ -166,7 +186,7 @@
                 </div>
 
                 <div class="text-right">
-                  <span class="text-[9px] font-black text-slate-400 uppercase tracking-tighter italic">Added</span>
+                  <span class="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-tighter italic">Added</span>
                   <span class="text-[9px] font-bold text-slate-400 block leading-tight">{{ formatTime(element.createdAt) }}</span>
                 </div>
               </div>
@@ -188,13 +208,12 @@ const isLoginMode = ref(true)
 const authError = ref('')
 const authForm = ref({ username: '', password: '' })
 const token = ref(localStorage.getItem('pilot_token'))
-// Persisting the user name for display
 const currentUser = ref(localStorage.getItem('pilot_username') || '')
 
-// --- UI STATE ---
+// --- UI STATE (New: Sidebar Toggle) ---
 const editingTimeId = ref(null)
+const isSidebarOpen = ref(false)
 
-// Directive for auto-focusing elements
 const vFocus = {
   mounted: (el) => el.focus()
 }
@@ -342,7 +361,7 @@ const finishFocus = (todo) => {
 
 const deleteTodo = (id) => { if (confirm("Remove task?")) saveTodos(todos.value.filter(t => t.id !== id)) }
 
-// --- TIMER LOGIC (Continues from progress) ---
+// --- TIMER LOGIC ---
 const updateElapsedDisplay = (task) => {
   const diff = new Date() - new Date(task.focusStartedAt)
   const totalMinutes = (task.totalFocusMinutes || 0) + Math.floor(diff / 60000)
@@ -385,9 +404,12 @@ onMounted(() => {
 .timer-display { font-variant-numeric: tabular-nums; }
 
 /* Sticky note visual effects */
-.post-it { transform: rotate(-1.5deg); }
-.post-it:nth-child(even) { transform: rotate(1.2deg); }
-.post-it:hover { transform: rotate(0deg) translateY(-15px) !important; z-index: 10; }
+/* On desktop, apply rotation. On mobile, keep it straight to save space and look cleaner in 1 col */
+@media (min-width: 768px) {
+  .post-it { transform: rotate(-1.5deg); }
+  .post-it:nth-child(even) { transform: rotate(1.2deg); }
+  .post-it:hover { transform: rotate(0deg) translateY(-15px) !important; z-index: 10; }
+}
 
 @keyframes float { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-10px) rotate(5deg); } }
 .animate-float { animation: float 6s ease-in-out infinite; }
