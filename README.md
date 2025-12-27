@@ -1,6 +1,6 @@
 # MONOTASK | Focus & ToDo
 
-A modern productivity workspace built with Vue and Cloudflare Workers. Focus Hub combines a minimal task backlog with an immersive focus timer to help you maintain deep work sessions.
+A modern productivity workspace built with Vue and Cloudflare Workers. MonoTask App combines a minimal task backlog with an immersive focus timer to help you maintain deep work sessions.
 
 ## Home Workspace
 ![Home Screen](./assets/home.png)
@@ -12,7 +12,7 @@ A modern productivity workspace built with Vue and Cloudflare Workers. Focus Hub
 
 # 🚀 Self-Hosting on Cloudflare Pages
 
-You can host your own Focus Hub for free.
+You can host your own MonoTask App for free.
 
 ## 1. Fork this repository
 Click the **Fork** button at the top right of this page to create a copy in your own GitHub account.
