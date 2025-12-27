@@ -1,7 +1,7 @@
 <template>
   <div v-if="!isLoggedIn" class="min-h-screen bg-[#f3f4f6] flex items-center justify-center p-6 relative">
     <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/5 pointer-events-none"></div>
-    <div class="max-w-md w-full z-10 space-y-8 p-8 md:p-10 rounded-2xl bg-white border border-slate-300 shadow-2xl">
+    <div class="max-w-md w-full z-10 space-y-8 p-10 rounded-2xl bg-white border border-slate-300 shadow-2xl">
       <div class="text-center">
         <h1 class="text-3xl font-black text-slate-800 tracking-tighter uppercase italic">Focus Hub</h1>
         <div class="flex justify-center gap-4 mt-6 p-1 bg-slate-100 rounded-xl">
@@ -85,7 +85,7 @@
 
     <div v-if="isSidebarOpen" @click="isSidebarOpen = false" class="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 md:hidden"></div>
 
-    <main class="flex-1 p-4 md:p-12 overflow-y-auto w-full">
+    <main ref="mainContent" class="flex-1 p-4 md:p-12 overflow-y-auto w-full">
       <section class="mb-4 md:mb-12">
         <draggable 
           v-model="focusList" 
@@ -137,29 +137,15 @@
 
       <section class="pb-20">
         <h2 class="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-6 md:mb-10 px-2 italic">Backlog: {{ selectedDate }}</h2>
-        <draggable 
-          v-model="backlogList" 
-          group="tasks" 
-          item-key="id" 
-          :delay="200"
-          :delay-on-touch-only="true"
-          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8"
-        >
+        <draggable v-model="backlogList" group="tasks" item-key="id" :delay="200" :delay-on-touch-only="true" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8">
           <template #item="{ element }">
             <div class="post-it group p-6 md:p-8 rounded-lg shadow-md cursor-grab active:cursor-grabbing transition-all hover:shadow-xl hover:-translate-y-3 flex flex-col min-h-[240px] md:min-h-[260px] relative border-b-4 border-black/10" :class="element.completed ? 'bg-slate-200 opacity-60 grayscale' : 'bg-[#fff9c4]'">
               <div class="flex items-start justify-between mb-3 md:mb-4">
                 <input type="checkbox" :checked="element.completed" @change="toggleTodo(element)" class="w-6 h-6 md:w-7 md:h-7 rounded border-slate-400 bg-white text-indigo-600 focus:ring-0 appearance-none border-2 checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer shadow-sm" />
                 <button @click="deleteTodo(element.id)" class="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2 text-slate-400 hover:text-red-500 transition-all"><svg class="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg></button>
               </div>
-              
               <div class="flex-1 flex flex-col gap-2">
-                <textarea 
-                  v-model="element.text" 
-                  @change="saveTodos(todos)" 
-                  rows="2"
-                  class="font-black text-lg md:text-xl bg-transparent border-none p-0 focus:ring-0 w-full text-slate-900 resize-none leading-tight overflow-hidden" 
-                  :class="{ 'line-through text-slate-400': element.completed }"
-                ></textarea>
+                <textarea v-model="element.text" @change="saveTodos(todos)" rows="2" class="font-black text-lg md:text-xl bg-transparent border-none p-0 focus:ring-0 w-full text-slate-900 resize-none leading-tight overflow-hidden" :class="{ 'line-through text-slate-400': element.completed }"></textarea>
                 <textarea v-model="element.notes" @change="saveTodos(todos)" placeholder="Notes..." class="text-[10px] md:text-xs text-yellow-900/60 bg-white/30 border-none rounded-xl p-3 w-full h-16 md:h-20 resize-none focus:ring-1 focus:ring-yellow-300 outline-none transition-all"></textarea>
                 
                 <button 
@@ -171,7 +157,6 @@
                   Focus Session
                 </button>
               </div>
-              
               <div class="mt-3 md:mt-4 flex items-end justify-between border-t border-black/5 pt-3 md:pt-4">
                 <div class="flex flex-col relative">
                   <span class="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-tighter italic mb-1">Focus Log</span>
@@ -179,19 +164,10 @@
                     <span class="text-[10px] font-black uppercase">{{ element.totalFocusMinutes || 0 }} MINS</span>
                     <svg class="w-3 h-3 opacity-0 group-hover/btn:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                   </button>
-
-                  <div v-if="editingTimeId === element.id" class="absolute bottom-full left-0 mb-2 bg-white border border-slate-200 shadow-2xl rounded-xl p-4 z-50 flex flex-col gap-3 min-w-[140px]">
-                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Edit Duration</div>
-                    <div class="flex items-center gap-2">
-                      <input v-focus type="number" v-model.number="element.totalFocusMinutes" @keyup.enter="editingTimeId = null; saveTodos(todos)" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-black text-indigo-600 focus:ring-2 focus:ring-indigo-500 outline-none" />
-                      <button @click="editingTimeId = null; saveTodos(todos)" class="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M5 13l4 4L19 7"/></svg></button>
-                    </div>
-                    <div class="fixed inset-0 -z-10" @click="editingTimeId = null; saveTodos(todos)"></div>
-                  </div>
                 </div>
                 <div class="text-right shrink-0">
                   <span class="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-tighter italic">Added</span>
-                  <span class="text-[9px] font-bold text-slate-400 block">{{ formatTime(element.createdAt) }}</span>
+                  <span class="text-[9px] font-bold text-slate-400 block leading-tight">{{ formatTime(element.createdAt) }}</span>
                 </div>
               </div>
             </div>
@@ -206,7 +182,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import draggable from 'vuedraggable'
 
-// --- AUTH STATE & PERSISTENCE ---
+// --- STATE ---
 const isLoggedIn = ref(false)
 const isLoginMode = ref(true)
 const authError = ref('')
@@ -214,79 +190,63 @@ const authForm = ref({ username: '', password: '' })
 const token = ref(localStorage.getItem('pilot_token'))
 const currentUser = ref(localStorage.getItem('pilot_username') || '')
 
-// --- UI STATE ---
 const editingTimeId = ref(null)
 const isSidebarOpen = ref(false)
+const mainContent = ref(null) // Target container for scrolling
 
-const vFocus = {
-  mounted: (el) => el.focus()
-}
+const vFocus = { mounted: (el) => el.focus() }
 
-// --- LOGIC: Move to Focus (1-tap start for mobile) ---
+// --- ACTIONS ---
 const moveToFocus = (todo) => {
   const updatedTodos = todos.value.map(t => {
-    if (t.id === todo.id) {
-      return { ...t, isWorking: true, focusStartedAt: new Date().toISOString() }
-    }
+    if (t.id === todo.id) return { ...t, isWorking: true, focusStartedAt: new Date().toISOString() }
     if (t.isWorking) return { ...t, isWorking: false }
     return t
   })
   saveTodos(updatedTodos)
   isSidebarOpen.value = false
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  
+  // Mobile: Scroll correctly to the top of the 'main' scroll container
+  if (mainContent.value) {
+    mainContent.value.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 }
 
 const handleAuthAction = () => handleAuth(isLoginMode.value ? 'login' : 'signup')
-
 const handleAuth = async (action) => {
   if (!authForm.value.username || !authForm.value.password) {
     authError.value = "Username and key required.";
     return;
   }
   try {
-    const res = await fetch(`/api/auth?action=${action}`, {
-      method: 'POST',
-      body: JSON.stringify(authForm.value)
-    })
+    const res = await fetch(`/api/auth?action=${action}`, { method: 'POST', body: JSON.stringify(authForm.value) })
     if (res.ok) {
-      if (action === 'signup') {
-        alert("Pilot Registered! You can now login.");
-        isLoginMode.value = true;
-      } else {
+      if (action === 'signup') { isLoginMode.value = true } 
+      else {
         const data = await res.json();
         token.value = data.token;
         currentUser.value = authForm.value.username;
         localStorage.setItem('pilot_token', data.token);
         localStorage.setItem('pilot_username', currentUser.value);
         isLoggedIn.value = true;
-        authError.value = '';
         fetchTodos();
       }
-    } else {
-      authError.value = action === 'signup' ? "Pilot name already taken." : "Access Denied.";
-    }
+    } else { authError.value = "Access Denied." }
   } catch (e) { authError.value = "System Error." }
 }
 
 const logout = () => {
-  if (confirm("Sign out and clear local session?")) {
-    localStorage.removeItem('pilot_token');
-    localStorage.removeItem('pilot_username');
-    isLoggedIn.value = false;
-    token.value = null;
-    currentUser.value = '';
-    todos.value = [];
-    authForm.value = { username: '', password: '' };
-    window.location.reload();
-  }
+  localStorage.removeItem('pilot_token');
+  localStorage.removeItem('pilot_username');
+  window.location.reload();
 }
 
-// --- CALENDAR & TODOs STATE ---
+// --- TODO LOGIC ---
 const todos = ref([])
 const newTodo = ref('')
 const selectedDate = ref(new Date().toLocaleDateString('en-CA'))
 const elapsedTime = ref('0 min')
-const seconds = ref(0) 
+const seconds = ref(0)
 let timerInterval = null
 
 const calendarDate = ref(new Date())
@@ -300,7 +260,6 @@ const nextMonth = () => calendarDate.value = new Date(currentYear.value, current
 const isDateSelected = (day) => selectedDate.value === formatDate(currentYear.value, currentMonth.value, day)
 const formatDate = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 
-// --- LIST SYNC ---
 const backlogList = computed({
   get: () => todos.value.filter(t => t.targetDate === selectedDate.value && !t.isWorking),
   set: (val) => syncChanges(val, false)
@@ -311,78 +270,50 @@ const focusList = computed({
 })
 
 const syncChanges = (newItems, isWorking) => {
-  const otherTodos = todos.value.filter(t => {
-    if (isWorking) return !t.isWorking 
-    return t.isWorking || t.targetDate !== selectedDate.value
-  })
-
-  const updatedNewItems = newItems.map(t => {
+  const others = todos.value.filter(t => isWorking ? !t.isWorking : (t.isWorking || t.targetDate !== selectedDate.value))
+  const updated = newItems.map(t => {
     if (isWorking && !t.isWorking) t.focusStartedAt = new Date().toISOString()
     return { ...t, isWorking, targetDate: isWorking ? t.targetDate : selectedDate.value }
   })
-
-  saveTodos([...otherTodos, ...updatedNewItems])
+  saveTodos([...others, ...updated])
 }
 
-// --- API CONNECTIVITY ---
 const fetchTodos = async () => {
   if (!token.value) return;
-  try {
-    const res = await fetch('/api/todos', { headers: { "Authorization": `Bearer ${token.value}` } })
-    if (res.status === 401) logout();
-    else if (res.ok) todos.value = await res.json() || [];
-  } catch (e) { console.error(e) }
+  const res = await fetch('/api/todos', { headers: { "Authorization": `Bearer ${token.value}` } })
+  if (res.ok) todos.value = await res.json() || [];
 }
 
 const saveTodos = async (newTodos) => {
   todos.value = newTodos
   if (!token.value) return;
-  try {
-    await fetch('/api/todos', { 
-      method: 'POST', body: JSON.stringify(newTodos),
-      headers: { "Authorization": `Bearer ${token.value}` }
-    })
-  } catch (e) { console.error(e) }
+  await fetch('/api/todos', { method: 'POST', body: JSON.stringify(newTodos), headers: { "Authorization": `Bearer ${token.value}` } })
 }
 
-// --- TODO ACTIONS ---
 const handleInputEnter = (e) => { if (!e.isComposing) addTodo() }
-
-const addTodo = async () => {
+const addTodo = () => {
   if (!newTodo.value.trim()) return
-  const item = { 
-    id: Date.now(), text: newTodo.value, notes: '', completed: false, 
-    targetDate: selectedDate.value, createdAt: new Date().toISOString(),
-    isWorking: false, focusStartedAt: null, totalFocusMinutes: 0
-  }
-  await saveTodos([item, ...todos.value])
-  newTodo.value = ''
+  const item = { id: Date.now(), text: newTodo.value, notes: '', completed: false, targetDate: selectedDate.value, createdAt: new Date().toISOString(), isWorking: false, focusStartedAt: null, totalFocusMinutes: 0 }
+  saveTodos([item, ...todos.value]); newTodo.value = ''
 }
 
 const toggleTodo = (todo) => {
   const others = todos.value.filter(t => t.id !== todo.id)
-  const updatedItem = { ...todo, completed: !todo.completed, isWorking: false }
-  let newTodos = updatedItem.completed ? [...others, updatedItem] : [updatedItem, ...others]
-  saveTodos(newTodos)
+  const updated = { ...todo, completed: !todo.completed, isWorking: false }
+  saveTodos(updated.completed ? [...others, updated] : [updated, ...others])
 }
 
 const finishFocus = (todo) => {
   const sessionMinutes = Math.floor((new Date() - new Date(todo.focusStartedAt)) / 60000)
   const others = todos.value.filter(t => t.id !== todo.id)
-  const updatedItem = { 
-    ...todo, completed: true, isWorking: false, 
-    totalFocusMinutes: (todo.totalFocusMinutes || 0) + sessionMinutes 
-  }
-  saveTodos([...others, updatedItem])
+  saveTodos([...others, { ...todo, completed: true, isWorking: false, totalFocusMinutes: (todo.totalFocusMinutes || 0) + sessionMinutes }])
 }
 
-const deleteTodo = (id) => { if (confirm("Remove task?")) saveTodos(todos.value.filter(t => t.id !== id)) }
+const deleteTodo = (id) => { if (confirm("Remove?")) saveTodos(todos.value.filter(t => t.id !== id)) }
 
-// --- TIMER LOGIC ---
 const updateElapsedDisplay = (task) => {
   const diff = new Date() - new Date(task.focusStartedAt)
-  const totalMinutes = (task.totalFocusMinutes || 0) + Math.floor(diff / 60000)
-  elapsedTime.value = `${totalMinutes} min`
+  elapsedTime.value = `${(task.totalFocusMinutes || 0) + Math.floor(diff / 60000)} min`
   seconds.value = Math.floor((diff / 1000) % 60)
 }
 
@@ -394,39 +325,23 @@ const startTimer = () => {
     timerInterval = setInterval(() => updateElapsedDisplay(task), 1000)
   }
 }
-
-const stopTimer = () => { 
-  if (timerInterval) clearInterval(timerInterval); 
-  elapsedTime.value = '0 min';
-  seconds.value = 0;
-}
+const stopTimer = () => { if (timerInterval) clearInterval(timerInterval); elapsedTime.value = '0 min'; seconds.value = 0; }
 
 watch(focusList, (val) => val.length > 0 ? startTimer() : stopTimer(), { deep: true, immediate: true })
-
 const formatTime = (iso) => iso ? new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : ''
-
-onMounted(() => {
-  if (token.value) {
-    isLoggedIn.value = true;
-    fetchTodos();
-  }
-})
+onMounted(() => { if (token.value) { isLoggedIn.value = true; fetchTodos() } })
 </script>
 
 <style scoped>
 .auth-input { @apply w-full bg-slate-50 border border-slate-300 rounded-xl px-6 py-4 text-slate-800 text-lg focus:ring-2 focus:ring-slate-800 outline-none transition-all; }
 .timer-display { font-variant-numeric: tabular-nums; }
-
-/* Sticky note visual effects - Desktop Only */
 @media (min-width: 768px) {
   .post-it { transform: rotate(-1.5deg); }
   .post-it:nth-child(even) { transform: rotate(1.2deg); }
   .post-it:hover { transform: rotate(0deg) translateY(-15px) !important; z-index: 10; }
 }
-
 @keyframes float { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-10px) rotate(5deg); } }
 .animate-float { animation: float 6s ease-in-out infinite; }
-
 .focus-glow { position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, rgba(79, 70, 229, 0.1), transparent 70%); animation: pulse 10s ease-in-out infinite; }
 @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.1); } }
 </style>
