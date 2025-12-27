@@ -107,8 +107,16 @@
                 <div class="text-[8px] font-black text-indigo-400 mt-2 tracking-widest uppercase">System Active</div>
               </div>
 
-              <div class="timer-display font-mono text-[10rem] font-black tracking-tighter text-white drop-shadow-2xl leading-none">
-                {{ elapsedTime }}
+              <div class="relative flex items-center justify-center py-10">
+                <svg class="absolute w-[30rem] h-[30rem] pointer-events-none opacity-20" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="40" stroke="white" stroke-width="0.5" fill="none" />
+                  <circle cx="50" cy="10" r="1.5" fill="#818cf8" class="transition-transform duration-1000 ease-linear"
+                    :style="{ transform: `rotate(${seconds * 6}deg)`, transformOrigin: '50px 50px' }" />
+                </svg>
+
+                <div class="timer-display font-mono text-[10rem] font-black tracking-tighter text-white drop-shadow-2xl leading-none relative z-10">
+                  {{ elapsedTime }}
+                </div>
               </div>
               
               <div class="space-y-4">
@@ -171,11 +179,6 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import draggable from 'vuedraggable'
 
-/**
- * FOCUS HUB v6.6 - UNIVERSITY DESK EDITION (Adjusted Layout)
- * Updated: Dynamic Focus Zone height for better visibility of backlog.
- */
-
 // --- AUTH STATE & LOGIC ---
 const isLoggedIn = ref(false)
 const isLoginMode = ref(true)
@@ -218,9 +221,9 @@ const logout = () => {
     localStorage.removeItem('pilot_token');
     isLoggedIn.value = false;
     token.value = null;
-    todos.value = []; // Reset local state
+    todos.value = [];
     authForm.value = { username: '', password: '' };
-    window.location.reload(); // Hard reset to ensure auth gate shows
+    window.location.reload();
   }
 }
 
@@ -229,6 +232,7 @@ const todos = ref([])
 const newTodo = ref('')
 const selectedDate = ref(new Date().toLocaleDateString('en-CA'))
 const elapsedTime = ref('0 min')
+const seconds = ref(0) // Manage seconds for UI
 let timerInterval = null
 
 const calendarDate = ref(new Date())
@@ -242,7 +246,7 @@ const nextMonth = () => calendarDate.value = new Date(currentYear.value, current
 const isDateSelected = (day) => selectedDate.value === formatDate(currentYear.value, currentMonth.value, day)
 const formatDate = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 
-// --- LIST SYNC ---
+// --- LIST SYNC (DND Compatible) ---
 const backlogList = computed({
   get: () => todos.value.filter(t => t.targetDate === selectedDate.value && !t.isWorking),
   set: (val) => syncChanges(val, false)
@@ -252,17 +256,21 @@ const focusList = computed({
   set: (val) => syncChanges(val, true)
 })
 
-const syncChanges = (items, isWorking) => {
-  const ids = new Set(items.map(i => i.id))
-  const updated = todos.value.map(t => {
-    if (ids.has(t.id)) {
-      if (isWorking && !t.isWorking) t.focusStartedAt = new Date().toISOString()
-      return { ...t, isWorking, targetDate: isWorking ? t.targetDate : selectedDate.value }
-    }
-    if (isWorking && t.isWorking && !ids.has(t.id)) return { ...t, isWorking: false }
-    return t
+const syncChanges = (newItems, isWorking) => {
+  // 1. Separate tasks that are not currently being viewed/edited
+  const otherTodos = todos.value.filter(t => {
+    if (isWorking) return !t.isWorking 
+    return t.isWorking || t.targetDate !== selectedDate.value
   })
-  saveTodos(updated)
+
+  // 2. Map state updates to the newly ordered items
+  const updatedNewItems = newItems.map(t => {
+    if (isWorking && !t.isWorking) t.focusStartedAt = new Date().toISOString()
+    return { ...t, isWorking, targetDate: isWorking ? t.targetDate : selectedDate.value }
+  })
+
+  // 3. Recombine to persist order
+  saveTodos([...otherTodos, ...updatedNewItems])
 }
 
 // --- DATA CONNECT ---
@@ -299,35 +307,52 @@ const addTodo = async () => {
   newTodo.value = ''
 }
 
+// [LOGIC] Move to bottom when completed, move to top when restored
 const toggleTodo = (todo) => {
-  saveTodos(todos.value.map(t => t.id === todo.id ? { ...t, completed: !t.completed, isWorking: false } : t))
+  const others = todos.value.filter(t => t.id !== todo.id)
+  const updatedItem = { ...todo, completed: !todo.completed, isWorking: false }
+
+  let newTodos
+  if (updatedItem.completed) {
+    newTodos = [...others, updatedItem]
+  } else {
+    newTodos = [updatedItem, ...others]
+  }
+  saveTodos(newTodos)
 }
 
 const finishFocus = (todo) => {
   const sessionMinutes = Math.floor((new Date() - new Date(todo.focusStartedAt)) / 60000)
-  const updated = todos.value.map(t => 
-    t.id === todo.id ? { 
-      ...t, completed: true, isWorking: false, 
-      totalFocusMinutes: (t.totalFocusMinutes || 0) + sessionMinutes 
-    } : t
-  )
-  saveTodos(updated)
+  const others = todos.value.filter(t => t.id !== todo.id)
+  const updatedItem = { 
+    ...todo, completed: true, isWorking: false, 
+    totalFocusMinutes: (todo.totalFocusMinutes || 0) + sessionMinutes 
+  }
+  // Auto-move to end of list upon completion
+  saveTodos([...others, updatedItem])
 }
 
 const deleteTodo = (id) => { if (confirm("Remove task?")) saveTodos(todos.value.filter(t => t.id !== id)) }
 
-// --- TIMER ---
+// --- TIMER (Now with second-level precision for UI) ---
 const startTimer = () => {
   stopTimer()
   if (focusList.value.length > 0) {
     const task = focusList.value[0]
     timerInterval = setInterval(() => {
-      const minutes = Math.floor((new Date() - new Date(task.focusStartedAt)) / 60000)
+      const diff = new Date() - new Date(task.focusStartedAt)
+      const minutes = Math.floor(diff / 60000)
       elapsedTime.value = `${minutes} min`
+      // Calculate 0-59 seconds for the analog dot rotation
+      seconds.value = Math.floor((diff / 1000) % 60)
     }, 1000)
   }
 }
-const stopTimer = () => { if (timerInterval) clearInterval(timerInterval); elapsedTime.value = '0 min' }
+const stopTimer = () => { 
+  if (timerInterval) clearInterval(timerInterval); 
+  elapsedTime.value = '0 min';
+  seconds.value = 0;
+}
 watch(focusList, (val) => val.length > 0 ? startTimer() : stopTimer(), { deep: true, immediate: true })
 
 const formatTime = (iso) => iso ? new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : ''
@@ -343,9 +368,11 @@ onMounted(() => {
 <style scoped>
 .auth-input { @apply w-full bg-slate-50 border border-slate-300 rounded-xl px-6 py-4 text-slate-800 text-lg focus:ring-2 focus:ring-slate-800 outline-none transition-all; }
 .timer-display { font-variant-numeric: tabular-nums; }
+
+/* Sticky Note Visuals */
 .post-it { transform: rotate(-1.5deg); }
 .post-it:nth-child(even) { transform: rotate(1.2deg); }
-.post-it:hover { transform: rotate(0deg) translateY(-15px); }
+.post-it:hover { transform: rotate(0deg) translateY(-15px) !important; z-index: 10; }
 
 @keyframes float { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-10px) rotate(5deg); } }
 .animate-float { animation: float 6s ease-in-out infinite; }
