@@ -32,6 +32,7 @@
         <h1 class="text-2xl font-black text-slate-800 tracking-tighter italic">FOCUS HUB</h1>
         <p class="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mt-1">{{ authForm.username }}'s Workspace</p>
       </div>
+
       <div class="calendar-container bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div class="flex items-center justify-between mb-4 px-1">
           <h2 class="text-xs font-black text-slate-700 uppercase">{{ currentMonthName }} {{ currentYear }}</h2>
@@ -50,6 +51,7 @@
           </button>
         </div>
       </div>
+
       <div class="mt-auto space-y-4">
         <div class="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm text-slate-600 text-xs leading-relaxed italic">
           "The best way to predict your future is to create it."
@@ -109,29 +111,46 @@
         <h2 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-10 px-4 italic">Backlog: {{ selectedDate }}</h2>
         <draggable v-model="backlogList" group="tasks" item-key="id" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           <template #item="{ element }">
-            <div class="post-it group p-8 rounded-lg shadow-md cursor-grab active:cursor-grabbing transition-all hover:shadow-xl hover:-translate-y-3 flex flex-col min-h-[320px] relative border-b-4 border-black/10" :class="element.completed ? 'bg-slate-200 opacity-60 grayscale' : 'bg-[#fff9c4]'">
-              <div class="flex items-start justify-between mb-6">
+            <div class="post-it group p-8 rounded-lg shadow-md cursor-grab active:cursor-grabbing transition-all hover:shadow-xl hover:-translate-y-3 flex flex-col min-h-[340px] relative border-b-4 border-black/10" :class="element.completed ? 'bg-slate-200 opacity-60 grayscale' : 'bg-[#fff9c4]'">
+              <div class="flex items-start justify-between mb-4">
                 <input type="checkbox" :checked="element.completed" @change="toggleTodo(element)" class="w-7 h-7 rounded border-slate-400 bg-white text-indigo-600 focus:ring-0 appearance-none border-2 checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer shadow-sm" />
                 <button @click="deleteTodo(element.id)" class="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-red-500 transition-all"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg></button>
               </div>
-              <div class="flex-1">
-                <input v-model="element.text" @change="saveTodos(todos)" class="font-black text-2xl bg-transparent border-none p-0 focus:ring-0 mb-4 w-full text-slate-900" :class="{ 'line-through text-slate-400': element.completed }" />
-                <textarea v-model="element.notes" @change="saveTodos(todos)" placeholder="Notes..." class="text-sm text-yellow-900/60 bg-white/30 border-none rounded-xl p-4 w-full h-24 resize-none focus:ring-1 focus:ring-yellow-300 outline-none transition-all"></textarea>
+              <div class="flex-1 flex flex-col gap-2">
+                <input v-model="element.text" @change="saveTodos(todos)" class="font-black text-2xl bg-transparent border-none p-0 focus:ring-0 w-full text-slate-900" :class="{ 'line-through text-slate-400': element.completed }" />
+                <textarea v-model="element.notes" @change="saveTodos(todos)" placeholder="Notes..." class="text-sm text-yellow-900/60 bg-white/20 border-none rounded-xl p-4 w-full h-32 resize-none focus:ring-1 focus:ring-yellow-300 outline-none transition-all"></textarea>
               </div>
               
-              <div class="mt-6 flex items-center justify-between border-t border-black/5 pt-5">
-                <div class="flex flex-col">
-                  <span class="text-[9px] font-black text-slate-400 uppercase tracking-tighter italic">Focus Log</span>
-                  <div class="flex items-center gap-1">
-                    <input 
-                      type="number" 
-                      v-model.number="element.totalFocusMinutes" 
-                      @change="saveTodos(todos)"
-                      class="w-12 bg-transparent border-none p-0 text-xs font-black text-indigo-600 focus:ring-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <span class="text-xs font-black text-indigo-600 uppercase">mins</span>
+              <div class="mt-4 flex items-end justify-between border-t border-black/5 pt-5">
+                <div class="flex flex-col relative">
+                  <span class="text-[9px] font-black text-slate-400 uppercase tracking-tighter italic mb-1">Focus Log</span>
+                  
+                  <button 
+                    @click="editingTimeId = element.id"
+                    class="flex items-center gap-1 group/btn px-2 py-1 -ml-2 rounded-lg hover:bg-black/5 transition-all text-indigo-600"
+                  >
+                    <span class="text-xs font-black uppercase">{{ element.totalFocusMinutes || 0 }} MINS</span>
+                    <svg class="w-3 h-3 opacity-0 group-hover/btn:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                  </button>
+
+                  <div v-if="editingTimeId === element.id" class="absolute bottom-full left-0 mb-2 bg-white border border-slate-200 shadow-2xl rounded-xl p-4 z-50 flex flex-col gap-3 min-w-[140px]">
+                    <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Edit Duration</div>
+                    <div class="flex items-center gap-2">
+                      <input 
+                        v-focus
+                        type="number" 
+                        v-model.number="element.totalFocusMinutes" 
+                        @keyup.enter="editingTimeId = null; saveTodos(todos)"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-black text-indigo-600 focus:ring-2 focus:ring-indigo-500 outline-none"
+                      />
+                      <button @click="editingTimeId = null; saveTodos(todos)" class="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                      </button>
+                    </div>
+                    <div class="fixed inset-0 -z-10" @click="editingTimeId = null; saveTodos(todos)"></div>
                   </div>
                 </div>
+
                 <div class="text-right">
                   <span class="text-[9px] font-black text-slate-400 uppercase tracking-tighter italic">Added</span>
                   <span class="text-[10px] font-bold text-slate-400 block">{{ formatTime(element.createdAt) }}</span>
@@ -155,6 +174,14 @@ const isLoginMode = ref(true)
 const authError = ref('')
 const authForm = ref({ username: '', password: '' })
 const token = ref(localStorage.getItem('pilot_token'))
+
+// --- UI STATE ---
+const editingTimeId = ref(null) // ID of the task currently being edited in the popover
+
+// Custom directive for auto-focusing elements when they appear
+const vFocus = {
+  mounted: (el) => el.focus()
+}
 
 const handleAuthAction = () => handleAuth(isLoginMode.value ? 'login' : 'signup')
 
@@ -202,7 +229,7 @@ const todos = ref([])
 const newTodo = ref('')
 const selectedDate = ref(new Date().toLocaleDateString('en-CA'))
 const elapsedTime = ref('0 min')
-const seconds = ref(0) // Seconds tracker for analog hand
+const seconds = ref(0) // Seconds tracker for analog hand animation
 let timerInterval = null
 
 const calendarDate = ref(new Date())
@@ -216,7 +243,7 @@ const nextMonth = () => calendarDate.value = new Date(currentYear.value, current
 const isDateSelected = (day) => selectedDate.value === formatDate(currentYear.value, currentMonth.value, day)
 const formatDate = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 
-// --- LIST SYNC (DND and Order Persistence) ---
+// --- LIST SYNC (Drag-and-Drop and State Persistence) ---
 const backlogList = computed({
   get: () => todos.value.filter(t => t.targetDate === selectedDate.value && !t.isWorking),
   set: (val) => syncChanges(val, false)
@@ -227,23 +254,23 @@ const focusList = computed({
 })
 
 const syncChanges = (newItems, isWorking) => {
-  // Separate tasks not in current view
+  // Filter out items not present in the current view
   const otherTodos = todos.value.filter(t => {
     if (isWorking) return !t.isWorking 
     return t.isWorking || t.targetDate !== selectedDate.value
   })
 
-  // Update states for items in view
+  // Update working state and timestamps for moved items
   const updatedNewItems = newItems.map(t => {
     if (isWorking && !t.isWorking) t.focusStartedAt = new Date().toISOString()
     return { ...t, isWorking, targetDate: isWorking ? t.targetDate : selectedDate.value }
   })
 
-  // Recombine arrays to save order
+  // Merge and save to maintain drag order
   saveTodos([...otherTodos, ...updatedNewItems])
 }
 
-// --- DATA CONNECT ---
+// --- API CONNECTIVITY ---
 const fetchTodos = async () => {
   if (!token.value) return;
   try {
@@ -264,8 +291,9 @@ const saveTodos = async (newTodos) => {
   } catch (e) { console.error(e) }
 }
 
-// --- ACTIONS ---
+// --- TODO ACTIONS ---
 const handleInputEnter = (e) => { if (!e.isComposing) addTodo() }
+
 const addTodo = async () => {
   if (!newTodo.value.trim()) return
   const item = { 
@@ -277,7 +305,6 @@ const addTodo = async () => {
   newTodo.value = ''
 }
 
-// Auto-sort: move to bottom if completed, move to top if unchecked
 const toggleTodo = (todo) => {
   const others = todos.value.filter(t => t.id !== todo.id)
   const updatedItem = { ...todo, completed: !todo.completed, isWorking: false }
@@ -298,13 +325,12 @@ const finishFocus = (todo) => {
     ...todo, completed: true, isWorking: false, 
     totalFocusMinutes: (todo.totalFocusMinutes || 0) + sessionMinutes 
   }
-  // Persist the completion state at the end of the backlog
   saveTodos([...others, updatedItem])
 }
 
 const deleteTodo = (id) => { if (confirm("Remove task?")) saveTodos(todos.value.filter(t => t.id !== id)) }
 
-// --- TIMER (Calculation for minutes and analog hand seconds) ---
+// --- TIMER LOGIC (Calculations for display and visual hand) ---
 const startTimer = () => {
   stopTimer()
   if (focusList.value.length > 0) {
@@ -313,16 +339,18 @@ const startTimer = () => {
       const diff = new Date() - new Date(task.focusStartedAt)
       const minutes = Math.floor(diff / 60000)
       elapsedTime.value = `${minutes} min`
-      // Update seconds (0-59) for SVG animation
+      // Calculate 0-59 seconds for visual rotation
       seconds.value = Math.floor((diff / 1000) % 60)
     }, 1000)
   }
 }
+
 const stopTimer = () => { 
   if (timerInterval) clearInterval(timerInterval); 
   elapsedTime.value = '0 min';
   seconds.value = 0;
 }
+
 watch(focusList, (val) => val.length > 0 ? startTimer() : stopTimer(), { deep: true, immediate: true })
 
 const formatTime = (iso) => iso ? new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : ''
@@ -339,7 +367,7 @@ onMounted(() => {
 .auth-input { @apply w-full bg-slate-50 border border-slate-300 rounded-xl px-6 py-4 text-slate-800 text-lg focus:ring-2 focus:ring-slate-800 outline-none transition-all; }
 .timer-display { font-variant-numeric: tabular-nums; }
 
-/* Sticky Note Visual Rotation */
+/* Visual tilt for sticky note effect */
 .post-it { transform: rotate(-1.5deg); }
 .post-it:nth-child(even) { transform: rotate(1.2deg); }
 .post-it:hover { transform: rotate(0deg) translateY(-15px) !important; z-index: 10; }
