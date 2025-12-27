@@ -39,7 +39,7 @@
     </header>
 
     <aside 
-      class="fixed inset-y-0 left-0 w-80 bg-[#f9f8f3] border-r border-slate-300 p-8 flex flex-col gap-10 z-40 transform transition-transform duration-300 ease-in-out md:relative md:transform-none md:translate-x-0 shadow-2xl md:shadow-none"
+      class="fixed inset-y-0 left-0 w-80 bg-[#f9f8f3] border-r border-slate-300 p-8 pb-12 flex flex-col gap-6 z-40 transform transition-transform duration-300 ease-in-out md:relative md:transform-none md:translate-x-0 shadow-2xl md:shadow-none overflow-y-auto"
       :class="isSidebarOpen ? 'translate-x-0' : '-translate-x-full'"
     >
       <button @click="isSidebarOpen = false" class="absolute top-4 right-4 md:hidden p-2 text-slate-400">
@@ -59,7 +59,7 @@
         </div>
       </div>
 
-      <div class="calendar-container bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+      <div class="calendar-container bg-white p-4 rounded-xl border border-slate-200 shadow-sm shrink-0">
         <div class="flex items-center justify-between mb-4 px-1">
           <h2 class="text-xs font-black text-slate-700 uppercase">{{ currentMonthName }} {{ currentYear }}</h2>
           <div class="flex gap-2">
@@ -78,8 +78,8 @@
         </div>
       </div>
 
-      <div class="mt-auto space-y-4">
-        <div class="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm text-slate-600 text-xs leading-relaxed italic">
+      <div class="mt-auto space-y-4 shrink-0">
+        <div class="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm text-slate-600 text-[11px] leading-relaxed italic">
           "The best way to predict your future is to create it."
         </div>
         <button @click="logout" class="w-full flex items-center justify-center gap-3 bg-white border border-slate-300 hover:bg-red-50 hover:text-red-600 text-slate-400 font-black py-4 rounded-xl transition-all uppercase text-[10px] tracking-widest shadow-sm">
@@ -93,7 +93,15 @@
 
     <main class="flex-1 p-4 md:p-12 overflow-y-auto w-full">
       <section class="mb-8 md:mb-12">
-        <draggable v-model="focusList" group="tasks" item-key="id" class="rounded-[2rem] md:rounded-[3rem] border-4 border-dashed border-slate-300 flex items-center justify-center p-4 md:p-8 transition-all duration-700 relative overflow-hidden" :class="focusList.length > 0 ? 'min-h-[350px] md:min-h-[450px] bg-slate-900 border-none shadow-2xl' : 'min-h-[150px] md:min-h-[180px] bg-slate-200/50'">
+        <draggable 
+          v-model="focusList" 
+          group="tasks" 
+          item-key="id" 
+          :delay="150"
+          :delay-on-touch-only="true"
+          class="rounded-[2rem] md:rounded-[3rem] border-4 border-dashed border-slate-300 flex items-center justify-center p-4 md:p-8 transition-all duration-700 relative overflow-hidden" 
+          :class="focusList.length > 0 ? 'min-h-[350px] md:min-h-[450px] bg-slate-900 border-none shadow-2xl' : 'min-h-[150px] md:min-h-[180px] bg-slate-200/50'"
+        >
           <template #item="{ element }">
             <div class="w-full max-w-3xl text-center space-y-6 md:space-y-12 z-20">
               <div class="absolute top-6 left-6 md:top-12 md:left-12 animate-float opacity-80 pointer-events-none">
@@ -137,10 +145,17 @@
 
       <section class="pb-20">
         <h2 class="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-6 md:mb-10 px-2 italic">Backlog: {{ selectedDate }}</h2>
-        <draggable v-model="backlogList" group="tasks" item-key="id" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8">
+        <draggable 
+          v-model="backlogList" 
+          group="tasks" 
+          item-key="id" 
+          :delay="150"
+          :delay-on-touch-only="true"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8"
+        >
           <template #item="{ element }">
-            <div class="post-it group p-6 md:p-8 rounded-lg shadow-md cursor-grab active:cursor-grabbing transition-all hover:shadow-xl hover:-translate-y-3 flex flex-col min-h-[260px] md:min-h-[280px] relative border-b-4 border-black/10" :class="element.completed ? 'bg-slate-200 opacity-60 grayscale' : 'bg-[#fff9c4]'">
-              <div class="flex items-start justify-between mb-4">
+            <div class="post-it group p-6 md:p-8 rounded-lg shadow-md cursor-grab active:cursor-grabbing transition-all hover:shadow-xl hover:-translate-y-3 flex flex-col min-h-[240px] md:min-h-[260px] relative border-b-4 border-black/10" :class="element.completed ? 'bg-slate-200 opacity-60 grayscale' : 'bg-[#fff9c4]'">
+              <div class="flex items-start justify-between mb-3 md:mb-4">
                 <input type="checkbox" :checked="element.completed" @change="toggleTodo(element)" class="w-6 h-6 md:w-7 md:h-7 rounded border-slate-400 bg-white text-indigo-600 focus:ring-0 appearance-none border-2 checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer shadow-sm" />
                 <button @click="deleteTodo(element.id)" class="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2 text-slate-400 hover:text-red-500 transition-all"><svg class="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg></button>
               </div>
@@ -152,13 +167,12 @@
                   class="font-black text-lg md:text-xl bg-transparent border-none p-0 focus:ring-0 w-full text-slate-900 resize-none leading-tight overflow-hidden" 
                   :class="{ 'line-through text-slate-400': element.completed }"
                 ></textarea>
-                <textarea v-model="element.notes" @change="saveTodos(todos)" placeholder="Notes..." class="text-xs text-yellow-900/60 bg-white/30 border-none rounded-xl p-3 w-full h-20 md:h-24 resize-none focus:ring-1 focus:ring-yellow-300 outline-none transition-all"></textarea>
+                <textarea v-model="element.notes" @change="saveTodos(todos)" placeholder="Notes..." class="text-[10px] md:text-xs text-yellow-900/60 bg-white/30 border-none rounded-xl p-3 w-full h-16 md:h-20 resize-none focus:ring-1 focus:ring-yellow-300 outline-none transition-all"></textarea>
               </div>
               
-              <div class="mt-4 flex items-end justify-between border-t border-black/5 pt-4">
+              <div class="mt-3 md:mt-4 flex items-end justify-between border-t border-black/5 pt-3 md:pt-4">
                 <div class="flex flex-col relative">
                   <span class="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-tighter italic mb-1">Focus Log</span>
-                  
                   <button 
                     @click="editingTimeId = element.id"
                     class="flex items-center gap-1 group/btn px-2 py-1 -ml-2 rounded-lg hover:bg-black/5 transition-all text-indigo-600"
@@ -170,24 +184,15 @@
                   <div v-if="editingTimeId === element.id" class="absolute bottom-full left-0 mb-2 bg-white border border-slate-200 shadow-2xl rounded-xl p-4 z-50 flex flex-col gap-3 min-w-[140px]">
                     <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Edit Duration</div>
                     <div class="flex items-center gap-2">
-                      <input 
-                        v-focus
-                        type="number" 
-                        v-model.number="element.totalFocusMinutes" 
-                        @keyup.enter="editingTimeId = null; saveTodos(todos)"
-                        class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-black text-indigo-600 focus:ring-2 focus:ring-indigo-500 outline-none"
-                      />
-                      <button @click="editingTimeId = null; saveTodos(todos)" class="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 transition-colors">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                      </button>
+                      <input v-focus type="number" v-model.number="element.totalFocusMinutes" @keyup.enter="editingTimeId = null; saveTodos(todos)" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-black text-indigo-600 focus:ring-2 focus:ring-indigo-500 outline-none" />
+                      <button @click="editingTimeId = null; saveTodos(todos)" class="bg-indigo-600 text-white p-2 rounded-lg hover:bg-indigo-700 transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M5 13l4 4L19 7"/></svg></button>
                     </div>
                     <div class="fixed inset-0 -z-10" @click="editingTimeId = null; saveTodos(todos)"></div>
                   </div>
                 </div>
-
                 <div class="text-right">
                   <span class="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-tighter italic">Added</span>
-                  <span class="text-[9px] font-bold text-slate-400 block leading-tight">{{ formatTime(element.createdAt) }}</span>
+                  <span class="text-[9px] font-bold text-slate-400 block">{{ formatTime(element.createdAt) }}</span>
                 </div>
               </div>
             </div>
@@ -210,9 +215,9 @@ const authForm = ref({ username: '', password: '' })
 const token = ref(localStorage.getItem('pilot_token'))
 const currentUser = ref(localStorage.getItem('pilot_username') || '')
 
-// --- UI STATE (New: Sidebar Toggle) ---
+// --- UI STATE ---
 const editingTimeId = ref(null)
-const isSidebarOpen = ref(false)
+const isSidebarOpen = ref(false) // Sidebar toggle state for mobile
 
 const vFocus = {
   mounted: (el) => el.focus()
@@ -361,7 +366,7 @@ const finishFocus = (todo) => {
 
 const deleteTodo = (id) => { if (confirm("Remove task?")) saveTodos(todos.value.filter(t => t.id !== id)) }
 
-// --- TIMER LOGIC ---
+// --- TIMER LOGIC (Resumes from progress) ---
 const updateElapsedDisplay = (task) => {
   const diff = new Date() - new Date(task.focusStartedAt)
   const totalMinutes = (task.totalFocusMinutes || 0) + Math.floor(diff / 60000)
@@ -403,8 +408,7 @@ onMounted(() => {
 .auth-input { @apply w-full bg-slate-50 border border-slate-300 rounded-xl px-6 py-4 text-slate-800 text-lg focus:ring-2 focus:ring-slate-800 outline-none transition-all; }
 .timer-display { font-variant-numeric: tabular-nums; }
 
-/* Sticky note visual effects */
-/* On desktop, apply rotation. On mobile, keep it straight to save space and look cleaner in 1 col */
+/* Sticky note visual effects - Applied only on desktop */
 @media (min-width: 768px) {
   .post-it { transform: rotate(-1.5deg); }
   .post-it:nth-child(even) { transform: rotate(1.2deg); }
