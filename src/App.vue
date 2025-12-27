@@ -108,7 +108,7 @@
                   <circle cx="50" cy="50" r="40" stroke="white" stroke-width="0.5" fill="none" />
                   <circle cx="50" cy="10" r="1.5" fill="#818cf8" class="transition-transform duration-1000 ease-linear" :style="{ transform: `rotate(${seconds * 6}deg)`, transformOrigin: '50px 50px' }" />
                 </svg>
-                <div class="timer-display font-mono text-6xl md:text-[10rem] font-black tracking-tighter text-white drop-shadow-2xl leading-none relative z-10">
+                <div class="timer-display font-mono text-6xl md:text-[10rem] font-black tracking-tighter text-white drop-shadow-2xl leading-none relative z-10" :class="element.isPaused ? 'opacity-50' : 'opacity-100'">
                   {{ elapsedTime }}
                 </div>
               </div>
@@ -116,7 +116,22 @@
                 <textarea v-model="element.text" @change="saveTodos(todos)" rows="1" class="bg-transparent border-none text-center text-3xl md:text-5xl font-black w-full focus:ring-0 text-white resize-none leading-tight overflow-hidden"></textarea>
                 <textarea v-model="element.notes" @change="saveTodos(todos)" placeholder="Mission details..." class="bg-white/5 border border-white/10 rounded-xl md:rounded-2xl p-4 md:p-6 w-full text-center text-slate-300 text-sm md:text-lg focus:ring-2 focus:ring-indigo-500/30 outline-none h-20 md:h-28 resize-none transition-all"></textarea>
               </div>
-              <button @click="finishFocus(element)" class="bg-indigo-600 hover:bg-indigo-500 text-white font-black px-10 py-5 md:px-16 md:py-7 rounded-xl md:rounded-2xl transition-all text-sm md:text-xl uppercase tracking-widest shadow-xl active:scale-95 w-full md:w-auto">Complete Mission</button>
+
+              <div class="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
+                <button 
+                  @click="togglePause(element)" 
+                  class="w-full sm:w-auto font-black px-10 py-5 md:px-16 md:py-7 rounded-xl md:rounded-2xl transition-all text-sm md:text-xl uppercase tracking-widest shadow-xl active:scale-95"
+                  :class="element.isPaused ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-amber-500 hover:bg-amber-400 text-white'"
+                >
+                  {{ element.isPaused ? 'Resume Mission' : 'Pause Mission' }}
+                </button>
+                <button 
+                  @click="finishFocus(element)" 
+                  class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-black px-10 py-5 md:px-16 md:py-7 rounded-xl md:rounded-2xl transition-all text-sm md:text-xl uppercase tracking-widest shadow-xl active:scale-95"
+                >
+                  Complete Mission
+                </button>
+              </div>
             </div>
           </template>
           <template #header v-if="focusList.length === 0">
@@ -192,24 +207,39 @@ const currentUser = ref(localStorage.getItem('pilot_username') || '')
 
 const editingTimeId = ref(null)
 const isSidebarOpen = ref(false)
-const mainContent = ref(null) // Target container for scrolling
+const mainContent = ref(null)
 
 const vFocus = { mounted: (el) => el.focus() }
 
 // --- ACTIONS ---
 const moveToFocus = (todo) => {
   const updatedTodos = todos.value.map(t => {
-    if (t.id === todo.id) return { ...t, isWorking: true, focusStartedAt: new Date().toISOString() }
+    if (t.id === todo.id) return { ...t, isWorking: true, isPaused: false, accumulatedMs: 0, focusStartedAt: new Date().toISOString() }
     if (t.isWorking) return { ...t, isWorking: false }
     return t
   })
   saveTodos(updatedTodos)
   isSidebarOpen.value = false
   
-  // Mobile: Scroll correctly to the top of the 'main' scroll container
   if (mainContent.value) {
     mainContent.value.scrollTo({ top: 0, behavior: 'smooth' })
   }
+}
+
+// NEW: Pause/Resume Toggle Logic
+const togglePause = (todo) => {
+  const now = new Date()
+  if (!todo.isPaused) {
+    // PAUSE: Save current progress in accumulatedMs
+    const sessionMs = now - new Date(todo.focusStartedAt)
+    todo.accumulatedMs = (todo.accumulatedMs || 0) + sessionMs
+    todo.isPaused = true
+  } else {
+    // RESUME: Reset focusStartedAt to current time
+    todo.focusStartedAt = now.toISOString()
+    todo.isPaused = false
+  }
+  saveTodos(todos.value)
 }
 
 const handleAuthAction = () => handleAuth(isLoginMode.value ? 'login' : 'signup')
@@ -272,7 +302,12 @@ const focusList = computed({
 const syncChanges = (newItems, isWorking) => {
   const others = todos.value.filter(t => isWorking ? !t.isWorking : (t.isWorking || t.targetDate !== selectedDate.value))
   const updated = newItems.map(t => {
-    if (isWorking && !t.isWorking) t.focusStartedAt = new Date().toISOString()
+    // Initialize or cleanup session metadata when moving in/out
+    if (isWorking && !t.isWorking) {
+       t.focusStartedAt = new Date().toISOString()
+       t.isPaused = false
+       t.accumulatedMs = 0
+    }
     return { ...t, isWorking, targetDate: isWorking ? t.targetDate : selectedDate.value }
   })
   saveTodos([...others, ...updated])
@@ -293,7 +328,7 @@ const saveTodos = async (newTodos) => {
 const handleInputEnter = (e) => { if (!e.isComposing) addTodo() }
 const addTodo = () => {
   if (!newTodo.value.trim()) return
-  const item = { id: Date.now(), text: newTodo.value, notes: '', completed: false, targetDate: selectedDate.value, createdAt: new Date().toISOString(), isWorking: false, focusStartedAt: null, totalFocusMinutes: 0 }
+  const item = { id: Date.now(), text: newTodo.value, notes: '', completed: false, targetDate: selectedDate.value, createdAt: new Date().toISOString(), isWorking: false, focusStartedAt: null, totalFocusMinutes: 0, isPaused: false, accumulatedMs: 0 }
   saveTodos([item, ...todos.value]); newTodo.value = ''
 }
 
@@ -304,17 +339,24 @@ const toggleTodo = (todo) => {
 }
 
 const finishFocus = (todo) => {
-  const sessionMinutes = Math.floor((new Date() - new Date(todo.focusStartedAt)) / 60000)
+  const now = new Date()
+  const currentSessionMs = todo.isPaused ? 0 : (now - new Date(todo.focusStartedAt))
+  const totalMsInSession = (todo.accumulatedMs || 0) + currentSessionMs
+  const sessionMinutes = Math.floor(totalMsInSession / 60000)
+  
   const others = todos.value.filter(t => t.id !== todo.id)
-  saveTodos([...others, { ...todo, completed: true, isWorking: false, totalFocusMinutes: (todo.totalFocusMinutes || 0) + sessionMinutes }])
+  saveTodos([...others, { ...todo, completed: true, isWorking: false, totalFocusMinutes: (todo.totalFocusMinutes || 0) + sessionMinutes, accumulatedMs: 0, isPaused: false }])
 }
 
 const deleteTodo = (id) => { if (confirm("Remove?")) saveTodos(todos.value.filter(t => t.id !== id)) }
 
 const updateElapsedDisplay = (task) => {
-  const diff = new Date() - new Date(task.focusStartedAt)
-  elapsedTime.value = `${(task.totalFocusMinutes || 0) + Math.floor(diff / 60000)} min`
-  seconds.value = Math.floor((diff / 1000) % 60)
+  const now = new Date()
+  const currentSessionMs = task.isPaused ? 0 : (now - new Date(task.focusStartedAt))
+  const totalMsInSession = (task.accumulatedMs || 0) + currentSessionMs
+  
+  elapsedTime.value = `${(task.totalFocusMinutes || 0) + Math.floor(totalMsInSession / 60000)} min`
+  seconds.value = Math.floor((totalMsInSession / 1000) % 60)
 }
 
 const startTimer = () => {
@@ -322,7 +364,10 @@ const startTimer = () => {
   if (focusList.value.length > 0) {
     const task = focusList.value[0]
     updateElapsedDisplay(task)
-    timerInterval = setInterval(() => updateElapsedDisplay(task), 1000)
+    // Only run interval if not paused
+    if (!task.isPaused) {
+      timerInterval = setInterval(() => updateElapsedDisplay(task), 1000)
+    }
   }
 }
 const stopTimer = () => { if (timerInterval) clearInterval(timerInterval); elapsedTime.value = '0 min'; seconds.value = 0; }
@@ -334,7 +379,7 @@ onMounted(() => { if (token.value) { isLoggedIn.value = true; fetchTodos() } })
 
 <style scoped>
 .auth-input { @apply w-full bg-slate-50 border border-slate-300 rounded-xl px-6 py-4 text-slate-800 text-lg focus:ring-2 focus:ring-slate-800 outline-none transition-all; }
-.timer-display { font-variant-numeric: tabular-nums; }
+.timer-display { font-variant-numeric: tabular-nums; transition: opacity 0.3s ease; }
 @media (min-width: 768px) {
   .post-it { transform: rotate(-1.5deg); }
   .post-it:nth-child(even) { transform: rotate(1.2deg); }
