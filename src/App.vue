@@ -86,13 +86,13 @@
     <div v-if="isSidebarOpen" @click="isSidebarOpen = false" class="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 md:hidden"></div>
 
     <main class="flex-1 p-4 md:p-12 overflow-y-auto w-full">
-      <section class="mb-8 md:mb-12">
+      <section class="mb-4 md:mb-12">
         <draggable 
           v-model="focusList" 
           group="tasks" 
           item-key="id" 
           class="rounded-[2rem] md:rounded-[3rem] border-4 border-dashed border-slate-300 flex items-center justify-center p-4 md:p-8 transition-all duration-700 relative overflow-hidden" 
-          :class="focusList.length > 0 ? 'min-h-[350px] md:min-h-[450px] bg-slate-900 border-none shadow-2xl' : 'min-h-[150px] md:min-h-[180px] bg-slate-200/50'"
+          :class="focusList.length > 0 ? 'min-h-[350px] md:min-h-[450px] bg-slate-900 border-none shadow-2xl' : 'hidden md:flex min-h-[180px] bg-slate-200/50'"
         >
           <template #item="{ element }">
             <div class="w-full max-w-3xl text-center space-y-6 md:space-y-12 z-20">
@@ -120,8 +120,8 @@
             </div>
           </template>
           <template #header v-if="focusList.length === 0">
-            <div class="text-center opacity-40 select-none cursor-default">
-              <p class="text-slate-500 font-black text-sm md:text-xl tracking-tight uppercase">DRAG A TASK HERE TO FOCUS</p>
+            <div class="text-center opacity-40 select-none cursor-default hidden md:block">
+              <p class="text-slate-500 font-black md:text-xl tracking-tight uppercase">DRAG A TASK HERE TO FOCUS</p>
             </div>
           </template>
           <div v-if="focusList.length > 0" class="absolute inset-0 z-0 bg-gradient-to-tr from-slate-900 via-indigo-900/10 to-slate-900">
@@ -175,10 +175,7 @@
               <div class="mt-3 md:mt-4 flex items-end justify-between border-t border-black/5 pt-3 md:pt-4">
                 <div class="flex flex-col relative">
                   <span class="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-tighter italic mb-1">Focus Log</span>
-                  <button 
-                    @click="editingTimeId = element.id"
-                    class="flex items-center gap-1 group/btn px-2 py-1 -ml-2 rounded-lg hover:bg-black/5 transition-all text-indigo-600"
-                  >
+                  <button @click="editingTimeId = element.id" class="flex items-center gap-1 group/btn px-2 py-1 -ml-2 rounded-lg hover:bg-black/5 transition-all text-indigo-600">
                     <span class="text-[10px] font-black uppercase">{{ element.totalFocusMinutes || 0 }} MINS</span>
                     <svg class="w-3 h-3 opacity-0 group-hover/btn:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                   </button>
@@ -209,7 +206,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import draggable from 'vuedraggable'
 
-// --- AUTH STATE ---
+// --- AUTH STATE & PERSISTENCE ---
 const isLoggedIn = ref(false)
 const isLoginMode = ref(true)
 const authError = ref('')
@@ -225,21 +222,17 @@ const vFocus = {
   mounted: (el) => el.focus()
 }
 
-// --- LOGIC: Move to Focus (Direct Action for Mobile) ---
+// --- LOGIC: Move to Focus (1-tap start for mobile) ---
 const moveToFocus = (todo) => {
-  // Move any existing working task back to backlog, and start focus for this one
   const updatedTodos = todos.value.map(t => {
     if (t.id === todo.id) {
       return { ...t, isWorking: true, focusStartedAt: new Date().toISOString() }
     }
-    // Only one task active in Focus Zone at a time
     if (t.isWorking) return { ...t, isWorking: false }
     return t
   })
   saveTodos(updatedTodos)
-  // Close sidebar if open
   isSidebarOpen.value = false
-  // Scroll to top to see the timer
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
@@ -307,7 +300,7 @@ const nextMonth = () => calendarDate.value = new Date(currentYear.value, current
 const isDateSelected = (day) => selectedDate.value === formatDate(currentYear.value, currentMonth.value, day)
 const formatDate = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 
-// --- LIST SYNC (DND) ---
+// --- LIST SYNC ---
 const backlogList = computed({
   get: () => todos.value.filter(t => t.targetDate === selectedDate.value && !t.isWorking),
   set: (val) => syncChanges(val, false)
