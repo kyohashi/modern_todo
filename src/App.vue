@@ -3,8 +3,10 @@
     <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/5 pointer-events-none"></div>
     <div class="max-w-md w-full z-10 space-y-8 p-10 rounded-2xl bg-white border border-slate-300 shadow-2xl">
       <div class="text-center">
-        <h1 class="text-3xl font-black text-slate-800 tracking-tighter uppercase italic">Focus Hub</h1>
-        <div class="flex justify-center gap-4 mt-6 p-1 bg-slate-100 rounded-xl">
+        <h1 class="text-3xl font-black text-slate-800 tracking-tighter uppercase italic">MonoTask</h1>
+        <p class="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em] mt-2">Focus on your ToDo</p>
+        
+        <div class="flex justify-center gap-4 mt-8 p-1 bg-slate-100 rounded-xl">
           <button @click="isLoginMode = true" class="flex-1 py-2 rounded-lg text-xs font-black transition-all" :class="isLoginMode ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400'">LOGIN</button>
           <button @click="isLoginMode = false" class="flex-1 py-2 rounded-lg text-xs font-black transition-all" :class="!isLoginMode ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400'">SIGN UP</button>
         </div>
@@ -29,7 +31,7 @@
   <div v-else class="flex flex-col md:flex-row min-h-screen bg-[#ecebe4] text-slate-800 font-sans selection:bg-indigo-100 h-screen overflow-hidden">
     
     <header class="md:hidden flex items-center justify-between p-4 bg-[#f9f8f3] border-b border-slate-300 shrink-0 z-30">
-      <h1 class="text-xl font-black text-slate-800 tracking-tighter italic leading-none">FOCUS HUB</h1>
+      <h1 class="text-xl font-black text-slate-800 tracking-tighter italic leading-none">MONOTASK</h1>
       <button @click="isSidebarOpen = !isSidebarOpen" class="p-2 text-slate-600 hover:bg-slate-200 rounded-lg transition-colors">
         <svg v-if="!isSidebarOpen" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" /></svg>
         <svg v-else class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -41,7 +43,7 @@
       :class="isSidebarOpen ? 'translate-x-0' : '-translate-x-full'"
     >
       <div class="flex flex-col gap-1 mt-8 md:mt-0 shrink-0">
-        <h1 class="text-2xl font-black text-slate-800 tracking-tighter italic leading-none hidden md:block">FOCUS HUB</h1>
+        <h1 class="text-2xl font-black text-slate-800 tracking-tighter italic leading-none hidden md:block">MONOTASK</h1>
         <div class="flex items-center gap-3 mt-3 bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
           <div class="bg-indigo-600 text-white w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black shadow-md shrink-0">
             {{ currentUser.charAt(0).toUpperCase() }}
@@ -202,7 +204,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import draggable from 'vuedraggable'
 
-// --- AUTH ---
+// --- AUTH STATE ---
 const isLoggedIn = ref(false)
 const isLoginMode = ref(true)
 const authError = ref('')
@@ -253,7 +255,7 @@ const finishFocus = (todo) => {
 // --- AUTH LOGIC ---
 const handleAuthAction = () => handleAuth(isLoginMode.value ? 'login' : 'signup')
 const handleAuth = async (action) => {
-  if (!authForm.value.username || !authForm.value.password) { authError.value = "Username and key required."; return; }
+  if (!authForm.value.username || !authForm.value.password) { authError.value = "ID and key required."; return; }
   try {
     const res = await fetch(`/api/auth?action=${action}`, { method: 'POST', body: JSON.stringify(authForm.value) })
     if (res.ok) {
