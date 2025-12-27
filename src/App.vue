@@ -1,16 +1,18 @@
 <template>
   <div v-if="!isLoggedIn" class="min-h-screen bg-[#f3f4f6] flex items-center justify-center p-6 relative">
     <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/5 pointer-events-none"></div>
-    <div class="max-w-md w-full z-10 space-y-8 p-10 rounded-2xl bg-white border border-slate-300 shadow-2xl">
-      <div class="text-center">
-        <h1 class="text-3xl font-black text-slate-800 tracking-tighter uppercase italic">MonoTask</h1>
-        <p class="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em] mt-2">Focus on your ToDo</p>
+    <div class="max-w-md w-full z-10 space-y-8 p-10 rounded-2xl bg-white border border-slate-300 shadow-2xl text-center">
+      <div class="space-y-2">
+        <h1 class="text-4xl font-black text-slate-800 tracking-tighter uppercase italic">MonoTask</h1>
+        <p class="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em]">Focus on your ToDo</p>
+        
         <div class="flex justify-center gap-4 mt-8 p-1 bg-slate-100 rounded-xl">
           <button @click="isLoginMode = true" class="flex-1 py-2 rounded-lg text-xs font-black transition-all" :class="isLoginMode ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400'">LOGIN</button>
           <button @click="isLoginMode = false" class="flex-1 py-2 rounded-lg text-xs font-black transition-all" :class="!isLoginMode ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400'">SIGN UP</button>
         </div>
       </div>
-      <div class="space-y-4">
+
+      <div class="space-y-4 text-left">
         <div class="space-y-1">
           <label class="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">User ID</label>
           <input v-model="authForm.username" type="text" class="auth-input" placeholder="Your name" />
@@ -20,10 +22,11 @@
           <input v-model="authForm.password" type="password" @keyup.enter="handleAuthAction" class="auth-input" placeholder="••••••••" />
         </div>
       </div>
+
       <button @click="handleAuthAction" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-black py-5 rounded-xl transition-all shadow-lg active:scale-95 uppercase tracking-widest text-sm">
         {{ isLoginMode ? 'Enter Hub' : 'Create Account' }}
       </button>
-      <p v-if="authError" class="text-red-600 text-xs font-black text-center animate-pulse uppercase">{{ authError }}</p>
+      <p v-if="authError" class="text-red-600 text-xs font-black animate-pulse uppercase">{{ authError }}</p>
     </div>
   </div>
 
@@ -55,13 +58,21 @@
       </div>
 
       <div class="calendar-container bg-white p-4 rounded-xl border border-slate-200 shadow-sm shrink-0">
-        <div class="flex items-center justify-between mb-4 px-1">
+        <div class="flex items-center justify-between mb-2 px-1">
           <h2 class="text-xs font-black text-slate-700 uppercase">{{ currentMonthName }} {{ currentYear }}</h2>
           <div class="flex gap-2">
             <button @click="prevMonth" class="p-1 hover:bg-slate-100 rounded text-slate-400 transition">←</button>
             <button @click="nextMonth" class="p-1 hover:bg-slate-100 rounded text-slate-400 transition">→</button>
           </div>
         </div>
+
+        <button 
+          @click="goToToday" 
+          class="w-full mb-4 py-1.5 border border-slate-200 rounded-lg text-[9px] font-black text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all uppercase tracking-[0.2em]"
+        >
+          Jump to Today
+        </button>
+
         <div class="grid grid-cols-7 text-center text-[10px] font-black text-slate-300 mb-2">
           <div v-for="d in ['S','M','T','W','T','F','S']" :key="d">{{ d }}</div>
         </div>
@@ -106,6 +117,7 @@
                   {{ element.isPaused ? 'Mission Paused' : 'System Active' }}
                 </div>
               </div>
+
               <div class="relative flex items-center justify-center py-4 md:py-10">
                 <svg class="absolute w-[20rem] h-[20rem] md:w-[30rem] md:h-[30rem] pointer-events-none opacity-20" viewBox="0 0 100 100">
                   <circle cx="50" cy="50" r="40" stroke="white" stroke-width="0.5" fill="none" />
@@ -115,10 +127,12 @@
                   {{ elapsedTime }}
                 </div>
               </div>
+
               <div class="space-y-2 md:space-y-4">
                 <textarea v-model="element.text" @change="saveTodos(todos)" rows="1" class="bg-transparent border-none text-center text-3xl md:text-5xl font-black w-full focus:ring-0 text-white resize-none leading-tight overflow-hidden"></textarea>
                 <textarea v-model="element.notes" @change="saveTodos(todos)" placeholder="Mission details..." class="bg-white/5 border border-white/10 rounded-xl md:rounded-2xl p-4 md:p-6 w-full text-center text-slate-300 text-sm md:text-lg focus:ring-2 focus:ring-indigo-500/30 outline-none h-20 md:h-28 resize-none transition-all"></textarea>
               </div>
+
               <div class="flex flex-col items-center justify-center gap-6 w-full">
                 <button @click="finishFocus(element)" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-black px-12 py-5 md:px-20 md:py-7 rounded-xl md:rounded-2xl transition-all text-sm md:text-xl uppercase tracking-widest shadow-xl active:scale-95">Complete Mission</button>
                 <button @click="togglePause(element)" class="text-[10px] font-black uppercase tracking-[0.3em] transition-all flex items-center gap-3 px-6 py-2 rounded-full border border-white/10 hover:bg-white/5" :class="element.isPaused ? 'text-emerald-400 border-emerald-500/30' : 'text-slate-400 hover:text-amber-400'">
@@ -148,7 +162,7 @@
       </div>
 
       <section class="pb-20">
-        <h2 class="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-6 md:mb-10 px-2 italic">Backlog: {{ selectedDate }}</h2>
+        <h2 class="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-6 md:mb-10 px-2 italic text-center md:text-left">Backlog: {{ selectedDate }}</h2>
         <draggable v-model="backlogList" group="tasks" item-key="id" :delay="200" :delay-on-touch-only="true" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8">
           <template #item="{ element }">
             <div 
@@ -158,10 +172,9 @@
             >
               <div class="flex items-start justify-between mb-3 md:mb-4">
                 <input type="checkbox" :checked="element.completed" @change="toggleTodo(element)" class="w-6 h-6 md:w-7 md:h-7 rounded border-slate-400 bg-white text-indigo-600 focus:ring-0 appearance-none border-2 checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer shadow-sm" />
-                
                 <div class="flex items-center gap-2">
                   <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button v-for="c in colorPalette" :key="c" @click="element.color = c; saveTodos(todos)" class="w-4 h-4 rounded-full border border-black/5 shadow-inner" :style="{ backgroundColor: c }" :title="c"></button>
+                    <button v-for="c in colorPalette" :key="c" @click="element.color = c; saveTodos(todos)" class="w-4 h-4 rounded-full border border-black/5 shadow-inner" :style="{ backgroundColor: c }"></button>
                   </div>
                   <button @click="deleteTodo(element.id)" class="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2 text-slate-400 hover:text-red-500 transition-all"><svg class="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg></button>
                 </div>
@@ -176,9 +189,9 @@
               <div class="mt-3 md:mt-4 flex items-end justify-between border-t border-black/5 pt-3 md:pt-4">
                 <div class="flex flex-col relative">
                   <span class="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-tighter italic mb-1">Focus Log</span>
-                  <button @click="editingTimeId = element.id" class="flex items-center gap-1 group/btn px-2 py-1 -ml-2 rounded-lg hover:bg-black/5 transition-all text-indigo-600">
+                  <div class="flex items-center gap-1 text-indigo-600">
                     <span class="text-[10px] font-black uppercase">{{ element.totalFocusMinutes || 0 }} MINS</span>
-                  </button>
+                  </div>
                 </div>
                 <div class="text-right shrink-0">
                   <span class="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-tighter italic">Added</span>
@@ -197,24 +210,20 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import draggable from 'vuedraggable'
 
-// --- STATE ---
+// --- AUTH & UI STATE ---
 const isLoggedIn = ref(false)
 const isLoginMode = ref(true)
 const authError = ref('')
 const authForm = ref({ username: '', password: '' })
 const token = ref(localStorage.getItem('pilot_token'))
 const currentUser = ref(localStorage.getItem('pilot_username') || '')
-
-const editingTimeId = ref(null)
 const isSidebarOpen = ref(false)
 const mainContent = ref(null)
 
-// NEW: Color Palette
+// --- CONFIG ---
 const colorPalette = ['#fff9c4', '#ffcfd2', '#cfdbff', '#e0ffcd', '#f3cfff']
 
-const vFocus = { mounted: (el) => el.focus() }
-
-// --- ACTIONS ---
+// --- TIMER ACTIONS ---
 const moveToFocus = (todo) => {
   const updatedTodos = todos.value.map(t => {
     if (t.id === todo.id) return { ...t, isWorking: true, isPaused: false, accumulatedMs: 0, focusStartedAt: new Date().toISOString() }
@@ -248,6 +257,7 @@ const finishFocus = (todo) => {
   saveTodos([...others, { ...todo, completed: true, isWorking: false, totalFocusMinutes: (todo.totalFocusMinutes || 0) + sessionMinutes, accumulatedMs: 0, isPaused: false }])
 }
 
+// --- AUTH LOGIC ---
 const handleAuthAction = () => handleAuth(isLoginMode.value ? 'login' : 'signup')
 const handleAuth = async (action) => {
   if (!authForm.value.username || !authForm.value.password) { authError.value = "ID and key required."; return; }
@@ -266,20 +276,39 @@ const handleAuth = async (action) => {
 }
 const logout = () => { localStorage.removeItem('pilot_token'); localStorage.removeItem('pilot_username'); window.location.reload(); }
 
-// --- TODO DATA ---
+// --- DATA & CALENDAR ---
 const todos = ref([]); const newTodo = ref(''); const selectedDate = ref(new Date().toLocaleDateString('en-CA'));
 const elapsedTime = ref('0 min'); const seconds = ref(0); let timerInterval = null;
-const calendarDate = ref(new Date()); const currentYear = computed(() => calendarDate.value.getFullYear());
-const currentMonth = computed(() => calendarDate.value.getMonth()); const currentMonthName = computed(() => calendarDate.value.toLocaleString('en-US', { month: 'long' }));
+
+const calendarDate = ref(new Date()); 
+const currentYear = computed(() => calendarDate.value.getFullYear());
+const currentMonth = computed(() => calendarDate.value.getMonth()); 
+const currentMonthName = computed(() => calendarDate.value.toLocaleString('en-US', { month: 'long' }));
 const daysInMonth = computed(() => new Date(currentYear.value, currentMonth.value + 1, 0).getDate());
 const calendarPadding = computed(() => new Date(currentYear.value, currentMonth.value, 1).getDay());
+
 const prevMonth = () => calendarDate.value = new Date(currentYear.value, currentMonth.value - 1, 1);
 const nextMonth = () => calendarDate.value = new Date(currentYear.value, currentMonth.value + 1, 1);
+
+// NEW: Today Button Logic
+const goToToday = () => {
+  const now = new Date();
+  calendarDate.value = new Date(now.getFullYear(), now.getMonth(), 1);
+  selectedDate.value = now.toLocaleDateString('en-CA');
+  isSidebarOpen.value = false;
+};
+
 const isDateSelected = (day) => selectedDate.value === formatDate(currentYear.value, currentMonth.value, day);
 const formatDate = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
-const backlogList = computed({ get: () => todos.value.filter(t => t.targetDate === selectedDate.value && !t.isWorking), set: (val) => syncChanges(val, false) })
-const focusList = computed({ get: () => todos.value.filter(t => t.isWorking), set: (val) => syncChanges(val, true) })
+const backlogList = computed({ 
+  get: () => todos.value.filter(t => t.targetDate === selectedDate.value && !t.isWorking), 
+  set: (val) => syncChanges(val, false) 
+})
+const focusList = computed({ 
+  get: () => todos.value.filter(t => t.isWorking), 
+  set: (val) => syncChanges(val, true) 
+})
 
 const syncChanges = (newItems, isWorking) => {
   const others = todos.value.filter(t => isWorking ? !t.isWorking : (t.isWorking || t.targetDate !== selectedDate.value))
@@ -292,11 +321,26 @@ const syncChanges = (newItems, isWorking) => {
 
 const fetchTodos = async () => { if (!token.value) return; const res = await fetch('/api/todos', { headers: { "Authorization": `Bearer ${token.value}` } }); if (res.ok) todos.value = await res.json() || []; }
 const saveTodos = async (newTodos) => { todos.value = newTodos; if (!token.value) return; await fetch('/api/todos', { method: 'POST', body: JSON.stringify(newTodos), headers: { "Authorization": `Bearer ${token.value}` } }) }
+
 const handleInputEnter = (e) => { if (!e.isComposing) addTodo() }
-const addTodo = () => { if (!newTodo.value.trim()) return; const item = { id: Date.now(), text: newTodo.value, notes: '', color: '#fff9c4', completed: false, targetDate: selectedDate.value, createdAt: new Date().toISOString(), isWorking: false, focusStartedAt: null, totalFocusMinutes: 0, isPaused: false, accumulatedMs: 0 }; saveTodos([item, ...todos.value]); newTodo.value = '' }
-const toggleTodo = (todo) => { const others = todos.value.filter(t => t.id !== todo.id); const updated = { ...todo, completed: !todo.completed, isWorking: false }; saveTodos(updated.completed ? [...others, updated] : [updated, ...others]) }
+const addTodo = () => { 
+  if (!newTodo.value.trim()) return; 
+  const item = { 
+    id: Date.now(), text: newTodo.value, notes: '', color: '#fff9c4', completed: false, 
+    targetDate: selectedDate.value, createdAt: new Date().toISOString(), isWorking: false, 
+    focusStartedAt: null, totalFocusMinutes: 0, isPaused: false, accumulatedMs: 0 
+  }; 
+  saveTodos([item, ...todos.value]); newTodo.value = '' 
+}
+
+const toggleTodo = (todo) => { 
+  const others = todos.value.filter(t => t.id !== todo.id); 
+  const updated = { ...todo, completed: !todo.completed, isWorking: false }; 
+  saveTodos(updated.completed ? [...others, updated] : [updated, ...others]) 
+}
 const deleteTodo = (id) => { if (confirm("Remove?")) saveTodos(todos.value.filter(t => t.id !== id)) }
 
+// --- TIMER RENDER ---
 const updateElapsedDisplay = (task) => {
   const now = new Date()
   const currentSessionMs = task.isPaused ? 0 : (now - new Date(task.focusStartedAt))
@@ -306,7 +350,12 @@ const updateElapsedDisplay = (task) => {
 }
 
 const startTimer = () => {
-  stopTimer(); if (focusList.value.length > 0) { const task = focusList.value[0]; updateElapsedDisplay(task); if (!task.isPaused) timerInterval = setInterval(() => updateElapsedDisplay(task), 1000); }
+  stopTimer(); 
+  if (focusList.value.length > 0) { 
+    const task = focusList.value[0]; 
+    updateElapsedDisplay(task); 
+    if (!task.isPaused) timerInterval = setInterval(() => updateElapsedDisplay(task), 1000); 
+  }
 }
 const stopTimer = () => { if (timerInterval) clearInterval(timerInterval); elapsedTime.value = '0 min'; seconds.value = 0; }
 
