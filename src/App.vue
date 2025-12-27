@@ -93,7 +93,7 @@
                 </div>
               </div>
               <div class="space-y-4">
-                <input v-model="element.text" @change="saveTodos(todos)" class="bg-transparent border-none text-center text-5xl font-black w-full focus:ring-0 text-white" />
+                <textarea v-model="element.text" @change="saveTodos(todos)" rows="1" class="bg-transparent border-none text-center text-5xl font-black w-full focus:ring-0 text-white resize-none leading-tight overflow-hidden"></textarea>
                 <textarea v-model="element.notes" @change="saveTodos(todos)" placeholder="Mission details..." class="bg-white/5 border border-white/10 rounded-2xl p-6 w-full text-center text-slate-300 text-lg focus:ring-2 focus:ring-indigo-500/30 outline-none h-28 resize-none transition-all"></textarea>
               </div>
               <button @click="finishFocus(element)" class="bg-indigo-600 hover:bg-indigo-500 text-white font-black px-16 py-7 rounded-2xl transition-all text-xl uppercase tracking-widest shadow-xl active:scale-95">Complete Mission</button>
@@ -119,17 +119,23 @@
         <h2 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-10 px-4 italic">Backlog: {{ selectedDate }}</h2>
         <draggable v-model="backlogList" group="tasks" item-key="id" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
           <template #item="{ element }">
-            <div class="post-it group p-8 rounded-lg shadow-md cursor-grab active:cursor-grabbing transition-all hover:shadow-xl hover:-translate-y-3 flex flex-col min-h-[340px] relative border-b-4 border-black/10" :class="element.completed ? 'bg-slate-200 opacity-60 grayscale' : 'bg-[#fff9c4]'">
+            <div class="post-it group p-8 rounded-lg shadow-md cursor-grab active:cursor-grabbing transition-all hover:shadow-xl hover:-translate-y-3 flex flex-col min-h-[280px] relative border-b-4 border-black/10" :class="element.completed ? 'bg-slate-200 opacity-60 grayscale' : 'bg-[#fff9c4]'">
               <div class="flex items-start justify-between mb-4">
                 <input type="checkbox" :checked="element.completed" @change="toggleTodo(element)" class="w-7 h-7 rounded border-slate-400 bg-white text-indigo-600 focus:ring-0 appearance-none border-2 checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer shadow-sm" />
                 <button @click="deleteTodo(element.id)" class="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-red-500 transition-all"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg></button>
               </div>
               <div class="flex-1 flex flex-col gap-2">
-                <input v-model="element.text" @change="saveTodos(todos)" class="font-black text-2xl bg-transparent border-none p-0 focus:ring-0 w-full text-slate-900" :class="{ 'line-through text-slate-400': element.completed }" />
-                <textarea v-model="element.notes" @change="saveTodos(todos)" placeholder="Notes..." class="text-sm text-yellow-900/60 bg-white/30 border-none rounded-xl p-4 w-full h-32 resize-none focus:ring-1 focus:ring-yellow-300 outline-none transition-all"></textarea>
+                <textarea 
+                  v-model="element.text" 
+                  @change="saveTodos(todos)" 
+                  rows="2"
+                  class="font-black text-xl bg-transparent border-none p-0 focus:ring-0 w-full text-slate-900 resize-none leading-tight overflow-hidden" 
+                  :class="{ 'line-through text-slate-400': element.completed }"
+                ></textarea>
+                <textarea v-model="element.notes" @change="saveTodos(todos)" placeholder="Notes..." class="text-xs text-yellow-900/60 bg-white/30 border-none rounded-xl p-3 w-full h-24 resize-none focus:ring-1 focus:ring-yellow-300 outline-none transition-all"></textarea>
               </div>
               
-              <div class="mt-4 flex items-end justify-between border-t border-black/5 pt-5">
+              <div class="mt-4 flex items-end justify-between border-t border-black/5 pt-4">
                 <div class="flex flex-col relative">
                   <span class="text-[9px] font-black text-slate-400 uppercase tracking-tighter italic mb-1">Focus Log</span>
                   
@@ -137,7 +143,7 @@
                     @click="editingTimeId = element.id"
                     class="flex items-center gap-1 group/btn px-2 py-1 -ml-2 rounded-lg hover:bg-black/5 transition-all text-indigo-600"
                   >
-                    <span class="text-xs font-black uppercase">{{ element.totalFocusMinutes || 0 }} MINS</span>
+                    <span class="text-[10px] font-black uppercase">{{ element.totalFocusMinutes || 0 }} MINS</span>
                     <svg class="w-3 h-3 opacity-0 group-hover/btn:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                   </button>
 
@@ -161,7 +167,7 @@
 
                 <div class="text-right">
                   <span class="text-[9px] font-black text-slate-400 uppercase tracking-tighter italic">Added</span>
-                  <span class="text-[10px] font-bold text-slate-400 block">{{ formatTime(element.createdAt) }}</span>
+                  <span class="text-[9px] font-bold text-slate-400 block leading-tight">{{ formatTime(element.createdAt) }}</span>
                 </div>
               </div>
             </div>
@@ -182,13 +188,13 @@ const isLoginMode = ref(true)
 const authError = ref('')
 const authForm = ref({ username: '', password: '' })
 const token = ref(localStorage.getItem('pilot_token'))
-// Stores current username for sidebar display
+// Persisting the user name for display
 const currentUser = ref(localStorage.getItem('pilot_username') || '')
 
 // --- UI STATE ---
 const editingTimeId = ref(null)
 
-// Custom directive for auto-focusing elements when they appear
+// Directive for auto-focusing elements
 const vFocus = {
   mounted: (el) => el.focus()
 }
@@ -336,10 +342,9 @@ const finishFocus = (todo) => {
 
 const deleteTodo = (id) => { if (confirm("Remove task?")) saveTodos(todos.value.filter(t => t.id !== id)) }
 
-// --- TIMER LOGIC (Resumes from accumulated progress) ---
+// --- TIMER LOGIC (Continues from progress) ---
 const updateElapsedDisplay = (task) => {
   const diff = new Date() - new Date(task.focusStartedAt)
-  // Logic: Accumulated total minutes + current session minutes
   const totalMinutes = (task.totalFocusMinutes || 0) + Math.floor(diff / 60000)
   elapsedTime.value = `${totalMinutes} min`
   seconds.value = Math.floor((diff / 1000) % 60)
@@ -349,7 +354,7 @@ const startTimer = () => {
   stopTimer()
   if (focusList.value.length > 0) {
     const task = focusList.value[0]
-    updateElapsedDisplay(task) // Initial display update
+    updateElapsedDisplay(task)
     
     timerInterval = setInterval(() => {
       updateElapsedDisplay(task)
@@ -379,7 +384,7 @@ onMounted(() => {
 .auth-input { @apply w-full bg-slate-50 border border-slate-300 rounded-xl px-6 py-4 text-slate-800 text-lg focus:ring-2 focus:ring-slate-800 outline-none transition-all; }
 .timer-display { font-variant-numeric: tabular-nums; }
 
-/* Visual tilt for sticky note effect */
+/* Sticky note visual effects */
 .post-it { transform: rotate(-1.5deg); }
 .post-it:nth-child(even) { transform: rotate(1.2deg); }
 .post-it:hover { transform: rotate(0deg) translateY(-15px) !important; z-index: 10; }
