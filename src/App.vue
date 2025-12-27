@@ -186,11 +186,27 @@
                   <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Focus Session
                 </button>
               </div>
+              
               <div class="mt-3 md:mt-4 flex items-end justify-between border-t border-black/5 pt-3 md:pt-4">
                 <div class="flex flex-col relative">
                   <span class="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-tighter italic mb-1">Focus Log</span>
+                  
                   <div class="flex items-center gap-1 text-indigo-600">
-                    <span class="text-[10px] font-black uppercase">{{ element.totalFocusMinutes || 0 }} MINS</span>
+                    <button v-if="editingTimeId !== element.id" @click="editingTimeId = element.id" class="flex items-center gap-1 group/btn px-2 py-1 -ml-2 rounded-lg hover:bg-black/5 transition-all">
+                      <span class="text-[10px] font-black uppercase">{{ element.totalFocusMinutes || 0 }} MINS</span>
+                      <svg class="w-3 h-3 opacity-0 group-hover/btn:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                    </button>
+                    <div v-else class="flex items-center gap-1">
+                      <input 
+                        v-model.number="element.totalFocusMinutes" 
+                        type="number" 
+                        v-focus
+                        @blur="editingTimeId = null; saveTodos(todos)" 
+                        @keyup.enter="editingTimeId = null; saveTodos(todos)"
+                        class="w-12 text-[10px] font-black bg-white/50 border-none rounded p-0 text-center focus:ring-1 focus:ring-indigo-500"
+                      />
+                      <span class="text-[10px] font-black uppercase">MINS</span>
+                    </div>
                   </div>
                 </div>
                 <div class="text-right shrink-0">
@@ -219,9 +235,11 @@ const token = ref(localStorage.getItem('pilot_token'))
 const currentUser = ref(localStorage.getItem('pilot_username') || '')
 const isSidebarOpen = ref(false)
 const mainContent = ref(null)
+const editingTimeId = ref(null)
 
 // --- CONFIG ---
 const colorPalette = ['#fff9c4', '#ffcfd2', '#cfdbff', '#e0ffcd', '#f3cfff']
+const vFocus = { mounted: (el) => el.focus() }
 
 // --- TIMER ACTIONS ---
 const moveToFocus = (todo) => {
@@ -290,7 +308,6 @@ const calendarPadding = computed(() => new Date(currentYear.value, currentMonth.
 const prevMonth = () => calendarDate.value = new Date(currentYear.value, currentMonth.value - 1, 1);
 const nextMonth = () => calendarDate.value = new Date(currentYear.value, currentMonth.value + 1, 1);
 
-// NEW: Today Button Logic
 const goToToday = () => {
   const now = new Date();
   calendarDate.value = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -340,7 +357,6 @@ const toggleTodo = (todo) => {
 }
 const deleteTodo = (id) => { if (confirm("Remove?")) saveTodos(todos.value.filter(t => t.id !== id)) }
 
-// --- TIMER RENDER ---
 const updateElapsedDisplay = (task) => {
   const now = new Date()
   const currentSessionMs = task.isPaused ? 0 : (now - new Date(task.focusStartedAt))
