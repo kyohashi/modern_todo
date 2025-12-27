@@ -118,7 +118,7 @@
               </div>
               <div class="flex-1 flex flex-col gap-2">
                 <input v-model="element.text" @change="saveTodos(todos)" class="font-black text-2xl bg-transparent border-none p-0 focus:ring-0 w-full text-slate-900" :class="{ 'line-through text-slate-400': element.completed }" />
-                <textarea v-model="element.notes" @change="saveTodos(todos)" placeholder="Notes..." class="text-sm text-yellow-900/60 bg-white/20 border-none rounded-xl p-4 w-full h-32 resize-none focus:ring-1 focus:ring-yellow-300 outline-none transition-all"></textarea>
+                <textarea v-model="element.notes" @change="saveTodos(todos)" placeholder="Notes..." class="text-sm text-yellow-900/60 bg-white/30 border-none rounded-xl p-4 w-full h-32 resize-none focus:ring-1 focus:ring-yellow-300 outline-none transition-all"></textarea>
               </div>
               
               <div class="mt-4 flex items-end justify-between border-t border-black/5 pt-5">
@@ -176,9 +176,8 @@ const authForm = ref({ username: '', password: '' })
 const token = ref(localStorage.getItem('pilot_token'))
 
 // --- UI STATE ---
-const editingTimeId = ref(null) // ID of the task currently being edited in the popover
+const editingTimeId = ref(null)
 
-// Custom directive for auto-focusing elements when they appear
 const vFocus = {
   mounted: (el) => el.focus()
 }
@@ -229,7 +228,7 @@ const todos = ref([])
 const newTodo = ref('')
 const selectedDate = ref(new Date().toLocaleDateString('en-CA'))
 const elapsedTime = ref('0 min')
-const seconds = ref(0) // Seconds tracker for analog hand animation
+const seconds = ref(0) 
 let timerInterval = null
 
 const calendarDate = ref(new Date())
@@ -243,7 +242,7 @@ const nextMonth = () => calendarDate.value = new Date(currentYear.value, current
 const isDateSelected = (day) => selectedDate.value === formatDate(currentYear.value, currentMonth.value, day)
 const formatDate = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 
-// --- LIST SYNC (Drag-and-Drop and State Persistence) ---
+// --- LIST SYNC ---
 const backlogList = computed({
   get: () => todos.value.filter(t => t.targetDate === selectedDate.value && !t.isWorking),
   set: (val) => syncChanges(val, false)
@@ -254,19 +253,16 @@ const focusList = computed({
 })
 
 const syncChanges = (newItems, isWorking) => {
-  // Filter out items not present in the current view
   const otherTodos = todos.value.filter(t => {
     if (isWorking) return !t.isWorking 
     return t.isWorking || t.targetDate !== selectedDate.value
   })
 
-  // Update working state and timestamps for moved items
   const updatedNewItems = newItems.map(t => {
     if (isWorking && !t.isWorking) t.focusStartedAt = new Date().toISOString()
     return { ...t, isWorking, targetDate: isWorking ? t.targetDate : selectedDate.value }
   })
 
-  // Merge and save to maintain drag order
   saveTodos([...otherTodos, ...updatedNewItems])
 }
 
@@ -309,12 +305,7 @@ const toggleTodo = (todo) => {
   const others = todos.value.filter(t => t.id !== todo.id)
   const updatedItem = { ...todo, completed: !todo.completed, isWorking: false }
 
-  let newTodos
-  if (updatedItem.completed) {
-    newTodos = [...others, updatedItem]
-  } else {
-    newTodos = [updatedItem, ...others]
-  }
+  let newTodos = updatedItem.completed ? [...others, updatedItem] : [updatedItem, ...others]
   saveTodos(newTodos)
 }
 
@@ -330,17 +321,24 @@ const finishFocus = (todo) => {
 
 const deleteTodo = (id) => { if (confirm("Remove task?")) saveTodos(todos.value.filter(t => t.id !== id)) }
 
-// --- TIMER LOGIC (Calculations for display and visual hand) ---
+// --- UPDATED TIMER LOGIC ---
+const updateElapsedDisplay = (task) => {
+  const diff = new Date() - new Date(task.focusStartedAt)
+  // Logic: Accumulated time (totalFocusMinutes) + Current session time
+  const totalMinutes = (task.totalFocusMinutes || 0) + Math.floor(diff / 60000)
+  elapsedTime.value = `${totalMinutes} min`
+  seconds.value = Math.floor((diff / 1000) % 60)
+}
+
 const startTimer = () => {
   stopTimer()
   if (focusList.value.length > 0) {
     const task = focusList.value[0]
+    // Set initial display immediately to prevent "0 min" flickering
+    updateElapsedDisplay(task)
+    
     timerInterval = setInterval(() => {
-      const diff = new Date() - new Date(task.focusStartedAt)
-      const minutes = Math.floor(diff / 60000)
-      elapsedTime.value = `${minutes} min`
-      // Calculate 0-59 seconds for visual rotation
-      seconds.value = Math.floor((diff / 1000) % 60)
+      updateElapsedDisplay(task)
     }, 1000)
   }
 }
@@ -367,7 +365,6 @@ onMounted(() => {
 .auth-input { @apply w-full bg-slate-50 border border-slate-300 rounded-xl px-6 py-4 text-slate-800 text-lg focus:ring-2 focus:ring-slate-800 outline-none transition-all; }
 .timer-display { font-variant-numeric: tabular-nums; }
 
-/* Visual tilt for sticky note effect */
 .post-it { transform: rotate(-1.5deg); }
 .post-it:nth-child(even) { transform: rotate(1.2deg); }
 .post-it:hover { transform: rotate(0deg) translateY(-15px) !important; z-index: 10; }
