@@ -98,38 +98,47 @@
             <div class="w-full max-w-3xl text-center space-y-6 md:space-y-12 z-20">
               <div class="absolute top-6 left-6 md:top-12 md:left-12 animate-float opacity-80 pointer-events-none">
                 <svg class="w-10 h-10 md:w-[60px] md:h-[60px]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2V6M12 6C8.686 6 6 8.686 6 12V22H18V12C18 8.686 15.314 6 12 6Z" stroke="#818cf8" stroke-width="2" stroke-linecap="round"/>
-                  <circle cx="12" cy="12" r="2" fill="#818cf8"/>
+                  <path d="M12 2V6M12 6C8.686 6 6 8.686 6 12V22H18V12C18 8.686 15.314 6 12 6Z" :stroke="element.isPaused ? '#f59e0b' : '#818cf8'" stroke-width="2" stroke-linecap="round"/>
+                  <circle cx="12" cy="12" r="2" :fill="element.isPaused ? '#f59e0b' : '#818cf8'"/>
                 </svg>
-                <div class="text-[6px] md:text-[8px] font-black text-indigo-400 mt-2 tracking-widest uppercase">System Active</div>
+                <div class="text-[6px] md:text-[8px] font-black mt-2 tracking-widest uppercase" :class="element.isPaused ? 'text-amber-500 animate-pulse' : 'text-indigo-400'">
+                  {{ element.isPaused ? 'Mission Paused' : 'System Active' }}
+                </div>
               </div>
+
               <div class="relative flex items-center justify-center py-4 md:py-10">
                 <svg class="absolute w-[20rem] h-[20rem] md:w-[30rem] md:h-[30rem] pointer-events-none opacity-20" viewBox="0 0 100 100">
                   <circle cx="50" cy="50" r="40" stroke="white" stroke-width="0.5" fill="none" />
-                  <circle cx="50" cy="10" r="1.5" fill="#818cf8" class="transition-transform duration-1000 ease-linear" :style="{ transform: `rotate(${seconds * 6}deg)`, transformOrigin: '50px 50px' }" />
+                  <circle cx="50" cy="10" r="1.5" :fill="element.isPaused ? '#f59e0b' : '#818cf8'" class="transition-transform duration-1000 ease-linear" :style="{ transform: `rotate(${seconds * 6}deg)`, transformOrigin: '50px 50px' }" />
                 </svg>
-                <div class="timer-display font-mono text-6xl md:text-[10rem] font-black tracking-tighter text-white drop-shadow-2xl leading-none relative z-10" :class="element.isPaused ? 'opacity-50' : 'opacity-100'">
+                <div class="timer-display font-mono text-6xl md:text-[10rem] font-black tracking-tighter text-white drop-shadow-2xl leading-none relative z-10 transition-all duration-500" :class="element.isPaused ? 'opacity-30 scale-95 blur-[1px]' : 'opacity-100 scale-100'">
                   {{ elapsedTime }}
                 </div>
               </div>
+
               <div class="space-y-2 md:space-y-4">
                 <textarea v-model="element.text" @change="saveTodos(todos)" rows="1" class="bg-transparent border-none text-center text-3xl md:text-5xl font-black w-full focus:ring-0 text-white resize-none leading-tight overflow-hidden"></textarea>
                 <textarea v-model="element.notes" @change="saveTodos(todos)" placeholder="Mission details..." class="bg-white/5 border border-white/10 rounded-xl md:rounded-2xl p-4 md:p-6 w-full text-center text-slate-300 text-sm md:text-lg focus:ring-2 focus:ring-indigo-500/30 outline-none h-20 md:h-28 resize-none transition-all"></textarea>
               </div>
 
-              <div class="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
-                <button 
-                  @click="togglePause(element)" 
-                  class="w-full sm:w-auto font-black px-10 py-5 md:px-16 md:py-7 rounded-xl md:rounded-2xl transition-all text-sm md:text-xl uppercase tracking-widest shadow-xl active:scale-95"
-                  :class="element.isPaused ? 'bg-emerald-600 hover:bg-emerald-500 text-white' : 'bg-amber-500 hover:bg-amber-400 text-white'"
-                >
-                  {{ element.isPaused ? 'Resume Mission' : 'Pause Mission' }}
-                </button>
+              <div class="flex flex-col items-center justify-center gap-6 w-full">
                 <button 
                   @click="finishFocus(element)" 
-                  class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-black px-10 py-5 md:px-16 md:py-7 rounded-xl md:rounded-2xl transition-all text-sm md:text-xl uppercase tracking-widest shadow-xl active:scale-95"
+                  class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-black px-12 py-5 md:px-20 md:py-7 rounded-xl md:rounded-2xl transition-all text-sm md:text-xl uppercase tracking-widest shadow-xl active:scale-95"
                 >
                   Complete Mission
+                </button>
+
+                <button 
+                  @click="togglePause(element)" 
+                  class="text-[10px] font-black uppercase tracking-[0.3em] transition-all flex items-center gap-3 px-6 py-2 rounded-full border border-white/10 hover:bg-white/5"
+                  :class="element.isPaused ? 'text-emerald-400 border-emerald-500/30' : 'text-slate-400 hover:text-amber-400'"
+                >
+                  <span class="flex h-2 w-2 relative">
+                    <span v-if="!element.isPaused" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2" :class="element.isPaused ? 'bg-emerald-500' : 'bg-indigo-500'"></span>
+                  </span>
+                  {{ element.isPaused ? 'Resume Mission' : 'Pause Mission' }}
                 </button>
               </div>
             </div>
@@ -139,8 +148,8 @@
               <p class="text-slate-500 font-black md:text-xl tracking-tight uppercase">DRAG A TASK HERE TO FOCUS</p>
             </div>
           </template>
-          <div v-if="focusList.length > 0" class="absolute inset-0 z-0 bg-gradient-to-tr from-slate-900 via-indigo-900/10 to-slate-900">
-            <div class="focus-glow"></div>
+          <div v-if="focusList.length > 0" class="absolute inset-0 z-0 bg-gradient-to-tr transition-colors duration-1000" :class="focusList[0].isPaused ? 'from-slate-900 via-amber-900/20 to-slate-900' : 'from-slate-900 via-indigo-900/10 to-slate-900'">
+            <div class="focus-glow" :class="focusList[0].isPaused ? 'pause-glow' : 'active-glow'"></div>
           </div>
         </draggable>
       </section>
@@ -163,11 +172,7 @@
                 <textarea v-model="element.text" @change="saveTodos(todos)" rows="2" class="font-black text-lg md:text-xl bg-transparent border-none p-0 focus:ring-0 w-full text-slate-900 resize-none leading-tight overflow-hidden" :class="{ 'line-through text-slate-400': element.completed }"></textarea>
                 <textarea v-model="element.notes" @change="saveTodos(todos)" placeholder="Notes..." class="text-[10px] md:text-xs text-yellow-900/60 bg-white/30 border-none rounded-xl p-3 w-full h-16 md:h-20 resize-none focus:ring-1 focus:ring-yellow-300 outline-none transition-all"></textarea>
                 
-                <button 
-                  v-if="!element.completed"
-                  @click.stop="moveToFocus(element)"
-                  class="md:hidden flex items-center justify-center gap-2 bg-indigo-600 text-white font-black py-3 rounded-xl mt-2 active:scale-95 transition-all text-xs uppercase tracking-widest shadow-md"
-                >
+                <button v-if="!element.completed" @click.stop="moveToFocus(element)" class="md:hidden flex items-center justify-center gap-2 bg-indigo-600 text-white font-black py-3 rounded-xl mt-2 active:scale-95 transition-all text-xs uppercase tracking-widest shadow-md">
                   <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
                   Focus Session
                 </button>
@@ -197,7 +202,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import draggable from 'vuedraggable'
 
-// --- STATE ---
+// --- AUTH ---
 const isLoggedIn = ref(false)
 const isLoginMode = ref(true)
 const authError = ref('')
@@ -211,7 +216,7 @@ const mainContent = ref(null)
 
 const vFocus = { mounted: (el) => el.focus() }
 
-// --- ACTIONS ---
+// --- TIMER ACTIONS ---
 const moveToFocus = (todo) => {
   const updatedTodos = todos.value.map(t => {
     if (t.id === todo.id) return { ...t, isWorking: true, isPaused: false, accumulatedMs: 0, focusStartedAt: new Date().toISOString() }
@@ -220,122 +225,20 @@ const moveToFocus = (todo) => {
   })
   saveTodos(updatedTodos)
   isSidebarOpen.value = false
-  
-  if (mainContent.value) {
-    mainContent.value.scrollTo({ top: 0, behavior: 'smooth' })
-  }
+  if (mainContent.value) mainContent.value.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-// NEW: Pause/Resume Toggle Logic
 const togglePause = (todo) => {
   const now = new Date()
   if (!todo.isPaused) {
-    // PAUSE: Save current progress in accumulatedMs
     const sessionMs = now - new Date(todo.focusStartedAt)
     todo.accumulatedMs = (todo.accumulatedMs || 0) + sessionMs
     todo.isPaused = true
   } else {
-    // RESUME: Reset focusStartedAt to current time
     todo.focusStartedAt = now.toISOString()
     todo.isPaused = false
   }
   saveTodos(todos.value)
-}
-
-const handleAuthAction = () => handleAuth(isLoginMode.value ? 'login' : 'signup')
-const handleAuth = async (action) => {
-  if (!authForm.value.username || !authForm.value.password) {
-    authError.value = "Username and key required.";
-    return;
-  }
-  try {
-    const res = await fetch(`/api/auth?action=${action}`, { method: 'POST', body: JSON.stringify(authForm.value) })
-    if (res.ok) {
-      if (action === 'signup') { isLoginMode.value = true } 
-      else {
-        const data = await res.json();
-        token.value = data.token;
-        currentUser.value = authForm.value.username;
-        localStorage.setItem('pilot_token', data.token);
-        localStorage.setItem('pilot_username', currentUser.value);
-        isLoggedIn.value = true;
-        fetchTodos();
-      }
-    } else { authError.value = "Access Denied." }
-  } catch (e) { authError.value = "System Error." }
-}
-
-const logout = () => {
-  localStorage.removeItem('pilot_token');
-  localStorage.removeItem('pilot_username');
-  window.location.reload();
-}
-
-// --- TODO LOGIC ---
-const todos = ref([])
-const newTodo = ref('')
-const selectedDate = ref(new Date().toLocaleDateString('en-CA'))
-const elapsedTime = ref('0 min')
-const seconds = ref(0)
-let timerInterval = null
-
-const calendarDate = ref(new Date())
-const currentYear = computed(() => calendarDate.value.getFullYear())
-const currentMonth = computed(() => calendarDate.value.getMonth())
-const currentMonthName = computed(() => calendarDate.value.toLocaleString('en-US', { month: 'long' }))
-const daysInMonth = computed(() => new Date(currentYear.value, currentMonth.value + 1, 0).getDate())
-const calendarPadding = computed(() => new Date(currentYear.value, currentMonth.value, 1).getDay())
-const prevMonth = () => calendarDate.value = new Date(currentYear.value, currentMonth.value - 1, 1)
-const nextMonth = () => calendarDate.value = new Date(currentYear.value, currentMonth.value + 1, 1)
-const isDateSelected = (day) => selectedDate.value === formatDate(currentYear.value, currentMonth.value, day)
-const formatDate = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-
-const backlogList = computed({
-  get: () => todos.value.filter(t => t.targetDate === selectedDate.value && !t.isWorking),
-  set: (val) => syncChanges(val, false)
-})
-const focusList = computed({
-  get: () => todos.value.filter(t => t.isWorking),
-  set: (val) => syncChanges(val, true)
-})
-
-const syncChanges = (newItems, isWorking) => {
-  const others = todos.value.filter(t => isWorking ? !t.isWorking : (t.isWorking || t.targetDate !== selectedDate.value))
-  const updated = newItems.map(t => {
-    // Initialize or cleanup session metadata when moving in/out
-    if (isWorking && !t.isWorking) {
-       t.focusStartedAt = new Date().toISOString()
-       t.isPaused = false
-       t.accumulatedMs = 0
-    }
-    return { ...t, isWorking, targetDate: isWorking ? t.targetDate : selectedDate.value }
-  })
-  saveTodos([...others, ...updated])
-}
-
-const fetchTodos = async () => {
-  if (!token.value) return;
-  const res = await fetch('/api/todos', { headers: { "Authorization": `Bearer ${token.value}` } })
-  if (res.ok) todos.value = await res.json() || [];
-}
-
-const saveTodos = async (newTodos) => {
-  todos.value = newTodos
-  if (!token.value) return;
-  await fetch('/api/todos', { method: 'POST', body: JSON.stringify(newTodos), headers: { "Authorization": `Bearer ${token.value}` } })
-}
-
-const handleInputEnter = (e) => { if (!e.isComposing) addTodo() }
-const addTodo = () => {
-  if (!newTodo.value.trim()) return
-  const item = { id: Date.now(), text: newTodo.value, notes: '', completed: false, targetDate: selectedDate.value, createdAt: new Date().toISOString(), isWorking: false, focusStartedAt: null, totalFocusMinutes: 0, isPaused: false, accumulatedMs: 0 }
-  saveTodos([item, ...todos.value]); newTodo.value = ''
-}
-
-const toggleTodo = (todo) => {
-  const others = todos.value.filter(t => t.id !== todo.id)
-  const updated = { ...todo, completed: !todo.completed, isWorking: false }
-  saveTodos(updated.completed ? [...others, updated] : [updated, ...others])
 }
 
 const finishFocus = (todo) => {
@@ -343,32 +246,70 @@ const finishFocus = (todo) => {
   const currentSessionMs = todo.isPaused ? 0 : (now - new Date(todo.focusStartedAt))
   const totalMsInSession = (todo.accumulatedMs || 0) + currentSessionMs
   const sessionMinutes = Math.floor(totalMsInSession / 60000)
-  
   const others = todos.value.filter(t => t.id !== todo.id)
   saveTodos([...others, { ...todo, completed: true, isWorking: false, totalFocusMinutes: (todo.totalFocusMinutes || 0) + sessionMinutes, accumulatedMs: 0, isPaused: false }])
 }
 
+// --- AUTH LOGIC ---
+const handleAuthAction = () => handleAuth(isLoginMode.value ? 'login' : 'signup')
+const handleAuth = async (action) => {
+  if (!authForm.value.username || !authForm.value.password) { authError.value = "Username and key required."; return; }
+  try {
+    const res = await fetch(`/api/auth?action=${action}`, { method: 'POST', body: JSON.stringify(authForm.value) })
+    if (res.ok) {
+      if (action === 'signup') { isLoginMode.value = true } 
+      else {
+        const data = await res.json();
+        token.value = data.token; currentUser.value = authForm.value.username;
+        localStorage.setItem('pilot_token', data.token); localStorage.setItem('pilot_username', currentUser.value);
+        isLoggedIn.value = true; fetchTodos();
+      }
+    } else { authError.value = "Access Denied." }
+  } catch (e) { authError.value = "System Error." }
+}
+const logout = () => { localStorage.removeItem('pilot_token'); localStorage.removeItem('pilot_username'); window.location.reload(); }
+
+// --- TODO DATA ---
+const todos = ref([]); const newTodo = ref(''); const selectedDate = ref(new Date().toLocaleDateString('en-CA'));
+const elapsedTime = ref('0 min'); const seconds = ref(0); let timerInterval = null;
+const calendarDate = ref(new Date()); const currentYear = computed(() => calendarDate.value.getFullYear());
+const currentMonth = computed(() => calendarDate.value.getMonth()); const currentMonthName = computed(() => calendarDate.value.toLocaleString('en-US', { month: 'long' }));
+const daysInMonth = computed(() => new Date(currentYear.value, currentMonth.value + 1, 0).getDate());
+const calendarPadding = computed(() => new Date(currentYear.value, currentMonth.value, 1).getDay());
+const prevMonth = () => calendarDate.value = new Date(currentYear.value, currentMonth.value - 1, 1);
+const nextMonth = () => calendarDate.value = new Date(currentYear.value, currentMonth.value + 1, 1);
+const isDateSelected = (day) => selectedDate.value === formatDate(currentYear.value, currentMonth.value, day);
+const formatDate = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+
+const backlogList = computed({ get: () => todos.value.filter(t => t.targetDate === selectedDate.value && !t.isWorking), set: (val) => syncChanges(val, false) })
+const focusList = computed({ get: () => todos.value.filter(t => t.isWorking), set: (val) => syncChanges(val, true) })
+
+const syncChanges = (newItems, isWorking) => {
+  const others = todos.value.filter(t => isWorking ? !t.isWorking : (t.isWorking || t.targetDate !== selectedDate.value))
+  const updated = newItems.map(t => {
+    if (isWorking && !t.isWorking) { t.focusStartedAt = new Date().toISOString(); t.isPaused = false; t.accumulatedMs = 0; }
+    return { ...t, isWorking, targetDate: isWorking ? t.targetDate : selectedDate.value }
+  })
+  saveTodos([...others, ...updated])
+}
+
+const fetchTodos = async () => { if (!token.value) return; const res = await fetch('/api/todos', { headers: { "Authorization": `Bearer ${token.value}` } }); if (res.ok) todos.value = await res.json() || []; }
+const saveTodos = async (newTodos) => { todos.value = newTodos; if (!token.value) return; await fetch('/api/todos', { method: 'POST', body: JSON.stringify(newTodos), headers: { "Authorization": `Bearer ${token.value}` } }) }
+const handleInputEnter = (e) => { if (!e.isComposing) addTodo() }
+const addTodo = () => { if (!newTodo.value.trim()) return; const item = { id: Date.now(), text: newTodo.value, notes: '', completed: false, targetDate: selectedDate.value, createdAt: new Date().toISOString(), isWorking: false, focusStartedAt: null, totalFocusMinutes: 0, isPaused: false, accumulatedMs: 0 }; saveTodos([item, ...todos.value]); newTodo.value = '' }
+const toggleTodo = (todo) => { const others = todos.value.filter(t => t.id !== todo.id); const updated = { ...todo, completed: !todo.completed, isWorking: false }; saveTodos(updated.completed ? [...others, updated] : [updated, ...others]) }
 const deleteTodo = (id) => { if (confirm("Remove?")) saveTodos(todos.value.filter(t => t.id !== id)) }
 
 const updateElapsedDisplay = (task) => {
   const now = new Date()
   const currentSessionMs = task.isPaused ? 0 : (now - new Date(task.focusStartedAt))
   const totalMsInSession = (task.accumulatedMs || 0) + currentSessionMs
-  
   elapsedTime.value = `${(task.totalFocusMinutes || 0) + Math.floor(totalMsInSession / 60000)} min`
   seconds.value = Math.floor((totalMsInSession / 1000) % 60)
 }
 
 const startTimer = () => {
-  stopTimer()
-  if (focusList.value.length > 0) {
-    const task = focusList.value[0]
-    updateElapsedDisplay(task)
-    // Only run interval if not paused
-    if (!task.isPaused) {
-      timerInterval = setInterval(() => updateElapsedDisplay(task), 1000)
-    }
-  }
+  stopTimer(); if (focusList.value.length > 0) { const task = focusList.value[0]; updateElapsedDisplay(task); if (!task.isPaused) timerInterval = setInterval(() => updateElapsedDisplay(task), 1000); }
 }
 const stopTimer = () => { if (timerInterval) clearInterval(timerInterval); elapsedTime.value = '0 min'; seconds.value = 0; }
 
@@ -379,7 +320,7 @@ onMounted(() => { if (token.value) { isLoggedIn.value = true; fetchTodos() } })
 
 <style scoped>
 .auth-input { @apply w-full bg-slate-50 border border-slate-300 rounded-xl px-6 py-4 text-slate-800 text-lg focus:ring-2 focus:ring-slate-800 outline-none transition-all; }
-.timer-display { font-variant-numeric: tabular-nums; transition: opacity 0.3s ease; }
+.timer-display { font-variant-numeric: tabular-nums; }
 @media (min-width: 768px) {
   .post-it { transform: rotate(-1.5deg); }
   .post-it:nth-child(even) { transform: rotate(1.2deg); }
@@ -387,6 +328,8 @@ onMounted(() => { if (token.value) { isLoggedIn.value = true; fetchTodos() } })
 }
 @keyframes float { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-10px) rotate(5deg); } }
 .animate-float { animation: float 6s ease-in-out infinite; }
-.focus-glow { position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, rgba(79, 70, 229, 0.1), transparent 70%); animation: pulse 10s ease-in-out infinite; }
+.focus-glow { position: absolute; inset: 0; animation: pulse 10s ease-in-out infinite; }
+.active-glow { background: radial-gradient(circle at 50% 50%, rgba(79, 70, 229, 0.1), transparent 70%); }
+.pause-glow { background: radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.15), transparent 70%); }
 @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.1); } }
 </style>
