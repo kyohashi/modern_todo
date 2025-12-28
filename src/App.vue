@@ -142,7 +142,12 @@
       </section>
 
       <div class="flex flex-col md:flex-row gap-4 mb-10 md:mb-20">
-        <input v-model="newTodo" @keydown.enter="handleInputEnter" placeholder="What's next?" class="flex-1 bg-white border border-slate-300 rounded-xl md:rounded-2xl px-6 py-5 md:px-10 md:py-7 shadow-sm text-lg md:text-2xl font-medium focus:ring-8 focus:ring-indigo-500/5 transition-all outline-none" />
+        <input 
+          v-model="newTodo" 
+          @keydown.enter="handleInputEnter" 
+          placeholder="What's next?" 
+          class="flex-1 bg-white border border-slate-300 rounded-xl md:rounded-2xl px-6 py-5 md:px-10 md:py-7 shadow-sm text-lg md:text-2xl font-medium focus:ring-8 focus:ring-indigo-500/5 transition-all outline-none" 
+        />
         <button @click="addTodo" class="bg-slate-800 text-white font-black px-8 py-5 md:px-14 md:py-7 rounded-xl md:rounded-2xl hover:bg-slate-900 transition-all text-sm md:text-xl shadow-lg active:scale-95 uppercase tracking-widest">Add</button>
       </div>
 
@@ -226,12 +231,11 @@ const isSidebarOpen = ref(false), mainContent = ref(null), editingTimeId = ref(n
 // --- Configuration ---
 const colorPalette = ['#fff9c4', '#ffcfd2', '#cfdbff', '#e0ffcd', '#f3cfff'], vFocus = { mounted: (el) => el.focus() }
 
-// --- Auth Logic (Fixed: .value references) ---
+// --- Auth Logic ---
 const handleAuthAction = () => handleAuth(isLoginMode.value ? 'login' : 'signup')
 const handleAuth = async (action) => {
   if (!authForm.value.username || !authForm.value.password) { 
-    authError.value = "ID and key required."; 
-    return; 
+    authError.value = "ID and key required."; return; 
   }
   try {
     const res = await fetch(`/api/auth?action=${action}`, { 
@@ -245,180 +249,96 @@ const handleAuth = async (action) => {
         authError.value = "Account created! Please login.";
       } else {
         const data = await res.json();
-        token.value = data.token;
-        currentUser.value = authForm.value.username;
-        localStorage.setItem('pilot_token', data.token);
-        localStorage.setItem('pilot_username', currentUser.value);
-        isLoggedIn.value = true;
-        fetchTodos();
+        token.value = data.token; currentUser.value = authForm.value.username;
+        localStorage.setItem('pilot_token', data.token); localStorage.setItem('pilot_username', currentUser.value);
+        isLoggedIn.value = true; fetchTodos();
       }
-    } else {
-      authError.value = "Access Denied. Check ID/PASS.";
-    }
-  } catch (e) {
-    authError.value = "System Error.";
-  }
+    } else { authError.value = "Access Denied. Check ID/PASS."; }
+  } catch (e) { authError.value = "System Error."; }
 }
-
-const logout = () => {
-  localStorage.removeItem('pilot_token');
-  localStorage.removeItem('pilot_username');
-  window.location.reload();
-}
+const logout = () => { localStorage.removeItem('pilot_token'); localStorage.removeItem('pilot_username'); window.location.reload(); }
 
 // --- Data Management & Calendar ---
-const todos = ref([])
-const newTodo = ref('')
-const selectedDate = ref(new Date().toLocaleDateString('en-CA'))
+const todos = ref([]), newTodo = ref(''), selectedDate = ref(new Date().toLocaleDateString('en-CA'))
 const elapsedTime = ref('0 min'), seconds = ref(0); let timerInterval = null
 const calendarDate = ref(new Date())
-
-const currentYear = computed(() => calendarDate.value.getFullYear())
-const currentMonth = computed(() => calendarDate.value.getMonth())
+const currentYear = computed(() => calendarDate.value.getFullYear()), currentMonth = computed(() => calendarDate.value.getMonth())
 const currentMonthName = computed(() => calendarDate.value.toLocaleString('en-US', { month: 'long' }))
 const daysInMonth = computed(() => new Date(currentYear.value, currentMonth.value + 1, 0).getDate())
 const calendarPadding = computed(() => new Date(currentYear.value, currentMonth.value, 1).getDay())
-
 const prevMonth = () => { calendarDate.value = new Date(currentYear.value, currentMonth.value - 1, 1) }
 const nextMonth = () => { calendarDate.value = new Date(currentYear.value, currentMonth.value + 1, 1) }
-const goToToday = () => {
-  const now = new Date()
-  calendarDate.value = new Date(now.getFullYear(), now.getMonth(), 1)
-  selectedDate.value = now.toLocaleDateString('en-CA')
-  isSidebarOpen.value = false
-}
-
+const goToToday = () => { const now = new Date(); calendarDate.value = new Date(now.getFullYear(), now.getMonth(), 1); selectedDate.value = now.toLocaleDateString('en-CA'); isSidebarOpen.value = false; }
 const formatDate = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 const isDateSelected = (day) => selectedDate.value === formatDate(currentYear.value, currentMonth.value, day)
 
 // --- Drag & Drop Sync ---
-const backlogList = computed({ 
-  get: () => todos.value.filter(t => t.targetDate === selectedDate.value && !t.isWorking), 
-  set: (val) => syncChanges(val, false) 
-})
-const focusList = computed({ 
-  get: () => todos.value.filter(t => t.isWorking), 
-  set: (val) => syncChanges(val, true) 
-})
-
+const backlogList = computed({ get: () => todos.value.filter(t => t.targetDate === selectedDate.value && !t.isWorking), set: (val) => syncChanges(val, false) })
+const focusList = computed({ get: () => todos.value.filter(t => t.isWorking), set: (val) => syncChanges(val, true) })
 const syncChanges = (newItems, isWorking) => {
   const others = todos.value.filter(t => isWorking ? !t.isWorking : (t.isWorking || t.targetDate !== selectedDate.value))
-  const updated = newItems.map(t => {
-    if (isWorking && !t.isWorking) {
-      t.focusStartedAt = new Date().toISOString()
-      t.isPaused = false
-      t.accumulatedMs = 0
-    }
-    return { ...t, isWorking, targetDate: isWorking ? t.targetDate : selectedDate.value }
+  const updated = newItems.map(t => { 
+    if (isWorking && !t.isWorking) { t.focusStartedAt = new Date().toISOString(); t.isPaused = false; t.accumulatedMs = 0; } 
+    return { ...t, isWorking, targetDate: isWorking ? t.targetDate : selectedDate.value } 
   })
   saveTodos([...others, ...updated])
 }
 
-// --- API Communication ---
-const fetchTodos = async () => {
-  if (!token.value) return;
-  const res = await fetch('/api/todos', { headers: { "Authorization": `Bearer ${token.value}` } });
-  if (res.ok) todos.value = await res.json() || [];
-}
-const saveTodos = async (newTodos) => {
-  todos.value = newTodos;
-  if (!token.value) return;
-  await fetch('/api/todos', { method: 'POST', body: JSON.stringify(newTodos), headers: { "Authorization": `Bearer ${token.value}`, "Content-Type": "application/json" } });
-}
+// --- API ---
+const fetchTodos = async () => { if (!token.value) return; const res = await fetch('/api/todos', { headers: { "Authorization": `Bearer ${token.value}` } }); if (res.ok) todos.value = await res.json() || []; }
+const saveTodos = async (newTodos) => { todos.value = newTodos; if (!token.value) return; await fetch('/api/todos', { method: 'POST', body: JSON.stringify(newTodos), headers: { "Authorization": `Bearer ${token.value}`, "Content-Type": "application/json" } }) }
 
-// --- Task Actions ---
-const addTodo = () => { 
-  if (!newTodo.value.trim()) return; 
-  const item = { 
-    id: Date.now(), text: newTodo.value, notes: '', color: '#fff9c4', completed: false, 
-    targetDate: selectedDate.value, createdAt: new Date().toISOString(), isWorking: false, 
-    focusStartedAt: null, totalFocusMinutes: 0, isPaused: false, accumulatedMs: 0 
-  }; 
-  saveTodos([item, ...todos.value]);
-  newTodo.value = '' 
-}
-
-const toggleTodo = (todo) => { 
-  const others = todos.value.filter(t => t.id !== todo.id); 
-  const updated = { ...todo, completed: !todo.completed, isWorking: false }; 
-  saveTodos(updated.completed ? [...others, updated] : [updated, ...others]) 
-}
-
-const deleteTodo = (id) => { if (confirm("Remove?")) saveTodos(todos.value.filter(t => t.id !== id)) }
-
-// --- Timer Processing ---
-const updateElapsedDisplay = (task) => {
-  if (!task.focusStartedAt) return;
-  const now = new Date()
-  const currentSessionMs = task.isPaused ? 0 : (now - new Date(task.focusStartedAt))
-  const totalMsInSession = (task.accumulatedMs || 0) + currentSessionMs
-  elapsedTime.value = `${(task.totalFocusMinutes || 0) + Math.floor(totalMsInSession / 60000)} min`
-  seconds.value = Math.floor((totalMsInSession / 1000) % 60)
-}
-
-const startTimer = () => {
-  stopTimer(); 
-  if (focusList.value.length > 0) { 
-    const task = focusList.value[0]; 
-    updateElapsedDisplay(task); 
-    if (!task.isPaused) timerInterval = setInterval(() => updateElapsedDisplay(task), 1000); 
+// --- Input & Task Actions ---
+const handleInputEnter = (e) => { 
+  // Standard logic to support Enter key addition while ignoring IME selection
+  if (!e.isComposing) {
+    addTodo();
   }
 }
+const addTodo = () => { if (!newTodo.value.trim()) return; const item = { id: Date.now(), text: newTodo.value, notes: '', color: '#fff9c4', completed: false, targetDate: selectedDate.value, createdAt: new Date().toISOString(), isWorking: false, focusStartedAt: null, totalFocusMinutes: 0, isPaused: false, accumulatedMs: 0 }; saveTodos([item, ...todos.value]); newTodo.value = '' }
+const toggleTodo = (todo) => { const others = todos.value.filter(t => t.id !== todo.id); const updated = { ...todo, completed: !todo.completed, isWorking: false }; saveTodos(updated.completed ? [...others, updated] : [updated, ...others]) }
+const deleteTodo = (id) => { if (confirm("Remove?")) saveTodos(todos.value.filter(t => t.id !== id)) }
+
+// --- Timer Logic ---
+const updateElapsedDisplay = (task) => {
+  if (!task.focusStartedAt) return;
+  const now = new Date(), currentSessionMs = task.isPaused ? 0 : (now - new Date(task.focusStartedAt)), totalMsInSession = (task.accumulatedMs || 0) + currentSessionMs;
+  elapsedTime.value = `${(task.totalFocusMinutes || 0) + Math.floor(totalMsInSession / 60000)} min`;
+  seconds.value = Math.floor((totalMsInSession / 1000) % 60);
+}
+const startTimer = () => { stopTimer(); if (focusList.value.length > 0) { const task = focusList.value[0]; updateElapsedDisplay(task); if (!task.isPaused) timerInterval = setInterval(() => updateElapsedDisplay(task), 1000); } }
 const stopTimer = () => { if (timerInterval) clearInterval(timerInterval); elapsedTime.value = '0 min'; seconds.value = 0; }
 
-// --- Timer Button Actions ---
 const togglePause = (todo) => {
   const now = new Date()
   if (!todo.isPaused) {
     const sessionMs = now - new Date(todo.focusStartedAt || now)
-    todo.accumulatedMs = (todo.accumulatedMs || 0) + sessionMs
-    todo.isPaused = true
+    todo.accumulatedMs = (todo.accumulatedMs || 0) + sessionMs; todo.isPaused = true
   } else {
-    todo.focusStartedAt = now.toISOString()
-    todo.isPaused = false
+    todo.focusStartedAt = now.toISOString(); todo.isPaused = false
   }
   saveTodos([...todos.value])
 }
 
 const finishFocus = (todo) => {
   const now = new Date(), currentSessionMs = todo.isPaused ? 0 : (now - new Date(todo.focusStartedAt || now))
-  const totalMsInSession = (todo.accumulatedMs || 0) + currentSessionMs, sessionMinutes = Math.floor(totalMsInSession / 60000)
-  const others = todos.value.filter(t => t.id !== todo.id)
+  const totalMsInSession = (todo.accumulatedMs || 0) + currentSessionMs, sessionMinutes = Math.floor(totalMsInSession / 60000), others = todos.value.filter(t => t.id !== todo.id)
   saveTodos([...others, { ...todo, completed: true, isWorking: false, totalFocusMinutes: (todo.totalFocusMinutes || 0) + sessionMinutes, accumulatedMs: 0, isPaused: false }])
 }
 
-const moveToFocus = (todo) => {
-  const updated = todos.value.map(t => {
-    if (t.id === todo.id) return { ...t, isWorking: true, isPaused: false, accumulatedMs: 0, focusStartedAt: new Date().toISOString() }
-    if (t.isWorking) return { ...t, isWorking: false }
-    return t
-  })
-  saveTodos(updated)
-  isSidebarOpen.value = false
-  if (mainContent.value) mainContent.value.scrollTo({ top: 0, behavior: 'smooth' })
-}
+const moveToFocus = (todo) => { const updated = todos.value.map(t => { if (t.id === todo.id) return { ...t, isWorking: true, isPaused: false, accumulatedMs: 0, focusStartedAt: new Date().toISOString() }; if (t.isWorking) return { ...t, isWorking: false }; return t; }); saveTodos(updated); isSidebarOpen.value = false; if (mainContent.value) mainContent.value.scrollTo({ top: 0, behavior: 'smooth' }); }
 
-// --- Watchers & Lifecycle ---
 watch(focusList, (val) => val.length > 0 ? startTimer() : stopTimer(), { deep: true, immediate: true })
 const formatTime = (iso) => iso ? new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : ''
 onMounted(() => { if (token.value) { isLoggedIn.value = true; fetchTodos() } })
 </script>
 
 <style scoped>
-/* Basic Inputs */
 .auth-input { @apply w-full bg-slate-50 border border-slate-300 rounded-xl px-6 py-4 text-slate-800 text-lg focus:ring-2 focus:ring-slate-800 outline-none transition-all; }
 .timer-display { font-variant-numeric: tabular-nums; }
-
-/* Desktop Sticky Note Angles */
-@media (min-width: 768px) {
-  .post-it { transform: rotate(-1.5deg); }
-  .post-it:nth-child(even) { transform: rotate(1.2deg); }
-}
-
-/* Animation Effects */
+@media (min-width: 768px) { .post-it { transform: rotate(-1.5deg); } .post-it:nth-child(even) { transform: rotate(1.2deg); } }
 @keyframes float { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-10px) rotate(5deg); } }
 .animate-float { animation: float 6s ease-in-out infinite; }
-
 .focus-glow { position: absolute; inset: 0; animation: pulse 10s ease-in-out infinite; }
 .active-glow { background: radial-gradient(circle at 50% 50%, rgba(79, 70, 229, 0.1), transparent 70%); }
 .pause-glow { background: radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.15), transparent 70%); }
