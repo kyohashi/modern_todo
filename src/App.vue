@@ -66,12 +66,7 @@
           </div>
         </div>
 
-        <button 
-          @click="goToToday" 
-          class="mx-auto block mb-4 px-4 py-1 border border-slate-200 rounded-lg text-[9px] font-black text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all uppercase tracking-[0.1em]"
-        >
-          Today
-        </button>
+        <button @click="goToToday" class="mx-auto block mb-4 px-4 py-1 border border-slate-200 rounded-lg text-[9px] font-black text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all uppercase tracking-[0.1em]">Today</button>
 
         <div class="grid grid-cols-7 text-center text-[10px] font-black text-slate-300 mb-2">
           <div v-for="d in ['S','M','T','W','T','F','S']" :key="d">{{ d }}</div>
@@ -117,7 +112,6 @@
                   {{ element.isPaused ? 'Mission Paused' : 'System Active' }}
                 </div>
               </div>
-
               <div class="relative flex items-center justify-center py-4 md:py-10">
                 <svg class="absolute w-[20rem] h-[20rem] md:w-[30rem] md:h-[30rem] pointer-events-none opacity-20" viewBox="0 0 100 100">
                   <circle cx="50" cy="50" r="40" stroke="white" stroke-width="0.5" fill="none" />
@@ -127,12 +121,10 @@
                   {{ elapsedTime }}
                 </div>
               </div>
-
-              <div class="space-y-2 md:space-y-4">
-                <textarea v-model="element.text" @change="saveTodos(todos)" rows="1" class="bg-transparent border-none text-center text-3xl md:text-5xl font-black w-full focus:ring-0 text-white resize-none leading-tight overflow-hidden"></textarea>
+              <div class="space-y-2 md:space-y-4 text-white">
+                <textarea v-model="element.text" @change="saveTodos(todos)" rows="1" class="bg-transparent border-none text-center text-3xl md:text-5xl font-black w-full focus:ring-0 resize-none leading-tight overflow-hidden"></textarea>
                 <textarea v-model="element.notes" @change="saveTodos(todos)" placeholder="Mission details..." class="bg-white/5 border border-white/10 rounded-xl md:rounded-2xl p-4 md:p-6 w-full text-center text-slate-300 text-sm md:text-lg focus:ring-2 focus:ring-indigo-500/30 outline-none h-20 md:h-28 resize-none transition-all"></textarea>
               </div>
-
               <div class="flex flex-col items-center justify-center gap-6 w-full">
                 <button @click="finishFocus(element)" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-black px-12 py-5 md:px-20 md:py-7 rounded-xl md:rounded-2xl transition-all text-sm md:text-xl uppercase tracking-widest shadow-xl active:scale-95">Complete Mission</button>
                 <button @click="togglePause(element)" class="text-[10px] font-black uppercase tracking-[0.3em] transition-all flex items-center gap-3 px-6 py-2 rounded-full border border-white/10 hover:bg-white/5" :class="element.isPaused ? 'text-emerald-400 border-emerald-500/30' : 'text-slate-400 hover:text-amber-400'">
@@ -150,9 +142,6 @@
               <p class="text-slate-500 font-black md:text-xl tracking-tight uppercase">DRAG A TASK HERE TO FOCUS</p>
             </div>
           </template>
-          <div v-if="focusList.length > 0" class="absolute inset-0 z-0 bg-gradient-to-tr transition-colors duration-1000" :class="focusList[0].isPaused ? 'from-slate-900 via-amber-900/20 to-slate-900' : 'from-slate-900 via-indigo-900/10 to-slate-900'">
-            <div class="focus-glow" :class="focusList[0].isPaused ? 'pause-glow' : 'active-glow'"></div>
-          </div>
         </draggable>
       </section>
 
@@ -166,19 +155,22 @@
         <draggable v-model="backlogList" group="tasks" item-key="id" :delay="200" :delay-on-touch-only="true" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8">
           <template #item="{ element }">
             <div 
-              class="post-it group p-6 md:p-8 rounded-lg shadow-md cursor-grab active:cursor-grabbing transition-all hover:shadow-xl hover:-translate-y-3 flex flex-col min-h-[240px] md:min-h-[260px] relative border-b-4" 
+              class="post-it group p-6 md:p-8 rounded-lg shadow-md cursor-grab active:cursor-grabbing transition-all hover:shadow-xl md:hover:-translate-y-3 flex flex-col min-h-[240px] md:min-h-[260px] relative border-b-4" 
               :style="{ backgroundColor: element.color || '#fff9c4', borderBottomColor: 'rgba(0,0,0,0.1)' }"
               :class="element.completed ? 'opacity-60 grayscale' : ''"
             >
               <div class="flex items-start justify-between mb-3 md:mb-4">
-                <input type="checkbox" :checked="element.completed" @change="toggleTodo(element)" class="w-6 h-6 md:w-7 md:h-7 rounded border-slate-400 bg-white text-indigo-600 focus:ring-0 appearance-none border-2 checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer shadow-sm" />
-                <div class="flex items-center gap-2">
-                  <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button v-for="c in colorPalette" :key="c" @click="element.color = c; saveTodos(todos)" class="w-4 h-4 rounded-full border border-black/5 shadow-inner" :style="{ backgroundColor: c }"></button>
-                  </div>
-                  <button @click="deleteTodo(element.id)" class="opacity-100 md:opacity-0 md:group-hover:opacity-100 p-2 text-slate-400 hover:text-red-500 transition-all"><svg class="w-5 h-5 md:w-6 md:h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg></button>
-                </div>
+                <input 
+                  type="checkbox" 
+                  :checked="element.completed" 
+                  @change="toggleTodo(element)" 
+                  class="w-7 h-7 rounded border-slate-400 bg-white text-indigo-600 focus:ring-0 appearance-none border-2 checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer shadow-sm z-20" 
+                />
+                <button @click="deleteTodo(element.id)" class="p-2 text-slate-400 hover:text-red-500 transition-all z-20">
+                  <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
               </div>
+
               <div class="flex-1 flex flex-col gap-2">
                 <textarea v-model="element.text" @change="saveTodos(todos)" rows="2" class="font-black text-lg md:text-xl bg-transparent border-none p-0 focus:ring-0 w-full text-slate-900 resize-none leading-tight overflow-hidden" :class="{ 'line-through text-slate-400/50': element.completed }"></textarea>
                 <textarea v-model="element.notes" @change="saveTodos(todos)" placeholder="Notes..." class="text-[10px] md:text-xs bg-white/30 border-none rounded-xl p-3 w-full h-16 md:h-20 resize-none focus:ring-1 focus:ring-black/10 outline-none transition-all text-black/70"></textarea>
@@ -187,28 +179,28 @@
                 </button>
               </div>
               
-              <div class="mt-3 md:mt-4 flex items-end justify-between border-t border-black/5 pt-3 md:pt-4">
-                <div class="flex flex-col relative">
+              <div class="mt-3 md:mt-4 flex items-end justify-between border-t border-black/5 pt-3 md:pt-4 relative">
+                <div class="flex flex-col relative min-w-[80px]">
                   <span class="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-tighter italic mb-1">Focus Log</span>
                   
-                  <div class="flex items-center gap-1 text-indigo-600">
-                    <button v-if="editingTimeId !== element.id" @click="editingTimeId = element.id" class="flex items-center gap-1 group/btn px-2 py-1 -ml-2 rounded-lg hover:bg-black/5 transition-all">
-                      <span class="text-[10px] font-black uppercase">{{ element.totalFocusMinutes || 0 }} MINS</span>
-                      <svg class="w-3 h-3 opacity-0 group-hover/btn:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-width="3" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                  <div class="flex items-center gap-2">
+                    <button v-if="editingTimeId !== element.id" @click="editingTimeId = element.id" class="flex items-center gap-1 group/btn px-1 py-0.5 rounded hover:bg-black/5 transition-all">
+                      <span class="text-[10px] font-black uppercase text-indigo-600">{{ element.totalFocusMinutes || 0 }} MINS</span>
                     </button>
                     <div v-else class="flex items-center gap-1">
-                      <input 
-                        v-model.number="element.totalFocusMinutes" 
-                        type="number" 
-                        v-focus
-                        @blur="editingTimeId = null; saveTodos(todos)" 
-                        @keyup.enter="editingTimeId = null; saveTodos(todos)"
-                        class="w-12 text-[10px] font-black bg-white/50 border-none rounded p-0 text-center focus:ring-1 focus:ring-indigo-500"
-                      />
-                      <span class="text-[10px] font-black uppercase">MINS</span>
+                      <input v-model.number="element.totalFocusMinutes" type="number" v-focus @blur="editingTimeId = null; saveTodos(todos)" @keyup.enter="editingTimeId = null; saveTodos(todos)" class="w-10 text-[10px] font-black bg-white/50 border-none rounded p-0 text-center focus:ring-1 focus:ring-indigo-500" />
                     </div>
+
+                    <button @click="activeColorPickerId = (activeColorPickerId === element.id ? null : element.id)" class="p-1 text-slate-400 hover:text-indigo-600 transition-colors">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg>
+                    </button>
+                  </div>
+
+                  <div v-if="activeColorPickerId === element.id" class="absolute bottom-full left-0 mb-2 flex gap-1 p-1.5 bg-white rounded-lg shadow-xl border border-slate-200 z-30">
+                    <button v-for="c in colorPalette" :key="c" @click="element.color = c; saveTodos(todos); activeColorPickerId = null" class="w-5 h-5 rounded-full border border-black/5" :style="{ backgroundColor: c }"></button>
                   </div>
                 </div>
+
                 <div class="text-right shrink-0">
                   <span class="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-tighter italic">Added</span>
                   <span class="text-[9px] font-bold text-slate-400 block leading-tight">{{ formatTime(element.createdAt) }}</span>
@@ -226,7 +218,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import draggable from 'vuedraggable'
 
-// --- AUTH & UI STATE ---
+// --- STATE ---
 const isLoggedIn = ref(false)
 const isLoginMode = ref(true)
 const authError = ref('')
@@ -236,6 +228,7 @@ const currentUser = ref(localStorage.getItem('pilot_username') || '')
 const isSidebarOpen = ref(false)
 const mainContent = ref(null)
 const editingTimeId = ref(null)
+const activeColorPickerId = ref(null) // NEW: Track color selection per task
 
 // --- CONFIG ---
 const colorPalette = ['#fff9c4', '#ffcfd2', '#cfdbff', '#e0ffcd', '#f3cfff']
@@ -275,10 +268,10 @@ const finishFocus = (todo) => {
   saveTodos([...others, { ...todo, completed: true, isWorking: false, totalFocusMinutes: (todo.totalFocusMinutes || 0) + sessionMinutes, accumulatedMs: 0, isPaused: false }])
 }
 
-// --- AUTH LOGIC ---
+// --- AUTH ---
 const handleAuthAction = () => handleAuth(isLoginMode.value ? 'login' : 'signup')
 const handleAuth = async (action) => {
-  if (!authForm.value.username || !authForm.value.password) { authError.value = "ID and key required."; return; }
+  if (!authForm.username || !authForm.password) { authError.value = "ID and key required."; return; }
   try {
     const res = await fetch(`/api/auth?action=${action}`, { method: 'POST', body: JSON.stringify(authForm.value) })
     if (res.ok) {
@@ -294,38 +287,23 @@ const handleAuth = async (action) => {
 }
 const logout = () => { localStorage.removeItem('pilot_token'); localStorage.removeItem('pilot_username'); window.location.reload(); }
 
-// --- DATA & CALENDAR ---
+// --- DATA ---
 const todos = ref([]); const newTodo = ref(''); const selectedDate = ref(new Date().toLocaleDateString('en-CA'));
 const elapsedTime = ref('0 min'); const seconds = ref(0); let timerInterval = null;
-
 const calendarDate = ref(new Date()); 
 const currentYear = computed(() => calendarDate.value.getFullYear());
 const currentMonth = computed(() => calendarDate.value.getMonth()); 
 const currentMonthName = computed(() => calendarDate.value.toLocaleString('en-US', { month: 'long' }));
 const daysInMonth = computed(() => new Date(currentYear.value, currentMonth.value + 1, 0).getDate());
 const calendarPadding = computed(() => new Date(currentYear.value, currentMonth.value, 1).getDay());
-
 const prevMonth = () => calendarDate.value = new Date(currentYear.value, currentMonth.value - 1, 1);
 const nextMonth = () => calendarDate.value = new Date(currentYear.value, currentMonth.value + 1, 1);
-
-const goToToday = () => {
-  const now = new Date();
-  calendarDate.value = new Date(now.getFullYear(), now.getMonth(), 1);
-  selectedDate.value = now.toLocaleDateString('en-CA');
-  isSidebarOpen.value = false;
-};
-
+const goToToday = () => { const now = new Date(); calendarDate.value = new Date(now.getFullYear(), now.getMonth(), 1); selectedDate.value = now.toLocaleDateString('en-CA'); isSidebarOpen.value = false; };
 const isDateSelected = (day) => selectedDate.value === formatDate(currentYear.value, currentMonth.value, day);
 const formatDate = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 
-const backlogList = computed({ 
-  get: () => todos.value.filter(t => t.targetDate === selectedDate.value && !t.isWorking), 
-  set: (val) => syncChanges(val, false) 
-})
-const focusList = computed({ 
-  get: () => todos.value.filter(t => t.isWorking), 
-  set: (val) => syncChanges(val, true) 
-})
+const backlogList = computed({ get: () => todos.value.filter(t => t.targetDate === selectedDate.value && !t.isWorking), set: (val) => syncChanges(val, false) })
+const focusList = computed({ get: () => todos.value.filter(t => t.isWorking), set: (val) => syncChanges(val, true) })
 
 const syncChanges = (newItems, isWorking) => {
   const others = todos.value.filter(t => isWorking ? !t.isWorking : (t.isWorking || t.targetDate !== selectedDate.value))
@@ -338,18 +316,12 @@ const syncChanges = (newItems, isWorking) => {
 
 const fetchTodos = async () => { if (!token.value) return; const res = await fetch('/api/todos', { headers: { "Authorization": `Bearer ${token.value}` } }); if (res.ok) todos.value = await res.json() || []; }
 const saveTodos = async (newTodos) => { todos.value = newTodos; if (!token.value) return; await fetch('/api/todos', { method: 'POST', body: JSON.stringify(newTodos), headers: { "Authorization": `Bearer ${token.value}` } }) }
-
 const handleInputEnter = (e) => { if (!e.isComposing) addTodo() }
 const addTodo = () => { 
   if (!newTodo.value.trim()) return; 
-  const item = { 
-    id: Date.now(), text: newTodo.value, notes: '', color: '#fff9c4', completed: false, 
-    targetDate: selectedDate.value, createdAt: new Date().toISOString(), isWorking: false, 
-    focusStartedAt: null, totalFocusMinutes: 0, isPaused: false, accumulatedMs: 0 
-  }; 
+  const item = { id: Date.now(), text: newTodo.value, notes: '', color: '#fff9c4', completed: false, targetDate: selectedDate.value, createdAt: new Date().toISOString(), isWorking: false, focusStartedAt: null, totalFocusMinutes: 0, isPaused: false, accumulatedMs: 0 }; 
   saveTodos([item, ...todos.value]); newTodo.value = '' 
 }
-
 const toggleTodo = (todo) => { 
   const others = todos.value.filter(t => t.id !== todo.id); 
   const updated = { ...todo, completed: !todo.completed, isWorking: false }; 
@@ -358,21 +330,12 @@ const toggleTodo = (todo) => {
 const deleteTodo = (id) => { if (confirm("Remove?")) saveTodos(todos.value.filter(t => t.id !== id)) }
 
 const updateElapsedDisplay = (task) => {
-  const now = new Date()
-  const currentSessionMs = task.isPaused ? 0 : (now - new Date(task.focusStartedAt))
-  const totalMsInSession = (task.accumulatedMs || 0) + currentSessionMs
-  elapsedTime.value = `${(task.totalFocusMinutes || 0) + Math.floor(totalMsInSession / 60000)} min`
-  seconds.value = Math.floor((totalMsInSession / 1000) % 60)
+  const now = new Date(); const currentSessionMs = task.isPaused ? 0 : (now - new Date(task.focusStartedAt));
+  const totalMsInSession = (task.accumulatedMs || 0) + currentSessionMs;
+  elapsedTime.value = `${(task.totalFocusMinutes || 0) + Math.floor(totalMsInSession / 60000)} min`;
+  seconds.value = Math.floor((totalMsInSession / 1000) % 60);
 }
-
-const startTimer = () => {
-  stopTimer(); 
-  if (focusList.value.length > 0) { 
-    const task = focusList.value[0]; 
-    updateElapsedDisplay(task); 
-    if (!task.isPaused) timerInterval = setInterval(() => updateElapsedDisplay(task), 1000); 
-  }
-}
+const startTimer = () => { stopTimer(); if (focusList.value.length > 0) { const task = focusList.value[0]; updateElapsedDisplay(task); if (!task.isPaused) timerInterval = setInterval(() => updateElapsedDisplay(task), 1000); } }
 const stopTimer = () => { if (timerInterval) clearInterval(timerInterval); elapsedTime.value = '0 min'; seconds.value = 0; }
 
 watch(focusList, (val) => val.length > 0 ? startTimer() : stopTimer(), { deep: true, immediate: true })
