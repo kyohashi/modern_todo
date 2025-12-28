@@ -5,11 +5,13 @@
       <div class="space-y-2">
         <h1 class="text-4xl font-black text-slate-800 tracking-tighter uppercase italic">MonoTask</h1>
         <p class="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em]">Focus on your ToDo</p>
+        
         <div class="flex justify-center gap-4 mt-8 p-1 bg-slate-100 rounded-xl">
           <button @click="isLoginMode = true" class="flex-1 py-2 rounded-lg text-xs font-black transition-all" :class="isLoginMode ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400'">LOGIN</button>
           <button @click="isLoginMode = false" class="flex-1 py-2 rounded-lg text-xs font-black transition-all" :class="!isLoginMode ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-400'">SIGN UP</button>
         </div>
       </div>
+
       <div class="space-y-4 text-left">
         <div class="space-y-1">
           <label class="text-[10px] font-black text-slate-500 uppercase ml-2 tracking-widest">User ID</label>
@@ -20,6 +22,7 @@
           <input v-model="authForm.password" type="password" @keyup.enter="handleAuthAction" class="auth-input" placeholder="••••••••" />
         </div>
       </div>
+
       <button @click="handleAuthAction" class="w-full bg-slate-800 hover:bg-slate-900 text-white font-black py-5 rounded-xl transition-all shadow-lg active:scale-95 uppercase tracking-widest text-sm">
         {{ isLoginMode ? 'Enter Hub' : 'Create Account' }}
       </button>
@@ -28,6 +31,7 @@
   </div>
 
   <div v-else class="flex flex-col md:flex-row min-h-screen bg-[#ecebe4] text-slate-800 font-sans selection:bg-indigo-100 h-screen overflow-hidden">
+    
     <header class="md:hidden flex items-center justify-between p-4 bg-[#f9f8f3] border-b border-slate-300 shrink-0 z-30">
       <h1 class="text-xl font-black text-slate-800 tracking-tighter italic leading-none">MONOTASK</h1>
       <button @click="isSidebarOpen = !isSidebarOpen" class="p-2 text-slate-600 hover:bg-slate-200 rounded-lg transition-colors">
@@ -36,11 +40,16 @@
       </button>
     </header>
 
-    <aside class="fixed inset-y-0 left-0 w-80 bg-[#f9f8f3] border-r border-slate-300 p-8 pb-12 flex flex-col gap-6 z-40 transform transition-transform duration-300 ease-in-out md:relative md:transform-none md:translate-x-0 shadow-2xl md:shadow-none overflow-y-auto" :class="isSidebarOpen ? 'translate-x-0' : '-translate-x-full'">
+    <aside 
+      class="fixed inset-y-0 left-0 w-80 bg-[#f9f8f3] border-r border-slate-300 p-8 pb-12 flex flex-col gap-6 z-40 transform transition-transform duration-300 ease-in-out md:relative md:transform-none md:translate-x-0 shadow-2xl md:shadow-none overflow-y-auto"
+      :class="isSidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+    >
       <div class="flex flex-col gap-1 mt-8 md:mt-0 shrink-0">
         <h1 class="text-2xl font-black text-slate-800 tracking-tighter italic leading-none hidden md:block">MONOTASK</h1>
         <div class="flex items-center gap-3 mt-3 bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
-          <div class="bg-indigo-600 text-white w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black shadow-md shrink-0">{{ currentUser.charAt(0).toUpperCase() }}</div>
+          <div class="bg-indigo-600 text-white w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black shadow-md shrink-0">
+            {{ currentUser.charAt(0).toUpperCase() }}
+          </div>
           <div class="flex flex-col overflow-hidden">
             <p class="text-[8px] text-slate-400 font-black uppercase tracking-widest leading-none mb-0.5">Logged in as</p>
             <p class="text-xs text-slate-700 font-black uppercase truncate tracking-tight">{{ currentUser }}</p>
@@ -56,20 +65,33 @@
             <button @click="nextMonth" class="p-1 hover:bg-slate-100 rounded text-slate-400 transition">→</button>
           </div>
         </div>
+
         <button @click="goToToday" class="mx-auto block mb-4 px-4 py-1 border border-slate-200 rounded-lg text-[9px] font-black text-slate-400 hover:text-indigo-600 hover:border-indigo-200 hover:bg-indigo-50 transition-all uppercase tracking-[0.1em]">Today</button>
+
         <div class="grid grid-cols-7 text-center text-[10px] font-black text-slate-300 mb-2">
           <div v-for="d in ['S','M','T','W','T','F','S']" :key="d">{{ d }}</div>
         </div>
         <div class="grid grid-cols-7 gap-1">
           <div v-for="n in calendarPadding" :key="'pad-'+n"></div>
-          <button v-for="day in daysInMonth" :key="day" @click="selectedDate = formatDate(currentYear, currentMonth, day); isSidebarOpen = false" class="h-8 w-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all" :class="isDateSelected(day) ? 'bg-indigo-600 text-white shadow-md scale-110' : 'hover:bg-slate-100 text-slate-600'">{{ day }}</button>
+          <button 
+            v-for="day in daysInMonth" 
+            :key="day" 
+            @click="selectedDate = formatDate(currentYear, currentMonth, day); isSidebarOpen = false" 
+            class="h-8 w-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all" 
+            :class="isDateSelected(day) ? 'bg-indigo-600 text-white shadow-md scale-110' : 'hover:bg-slate-100 text-slate-600'"
+          >
+            {{ day }}
+          </button>
         </div>
       </div>
 
       <div class="mt-auto space-y-4 shrink-0">
-        <div class="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm text-slate-600 text-[11px] leading-relaxed italic">"The best way to predict your future is to create it."</div>
+        <div class="p-5 bg-white rounded-2xl border border-slate-200 shadow-sm text-slate-600 text-[11px] leading-relaxed italic">
+          "The best way to predict your future is to create it."
+        </div>
         <button @click="logout" class="w-full flex items-center justify-center gap-3 bg-white border border-slate-300 hover:bg-red-50 hover:text-red-600 text-slate-400 font-black py-4 rounded-xl transition-all uppercase text-[10px] tracking-widest shadow-sm">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>Sign Out Hub
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+          Sign Out Hub
         </button>
       </div>
     </aside>
@@ -103,7 +125,7 @@
               </div>
 
               <div class="flex flex-col items-center justify-center gap-6 w-full z-30">
-                <button @click="finishFocus(element)" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white font-black px-12 py-5 md:px-20 md:py-7 rounded-xl md:rounded-2xl transition-all text-sm md:text-xl uppercase tracking-widest shadow-xl active:scale-95">Complete Mission</button>
+                <button @click="finishFocus(element)" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-50 text-white font-black px-12 py-5 md:px-20 md:py-7 rounded-xl md:rounded-2xl transition-all text-sm md:text-xl uppercase tracking-widest shadow-xl active:scale-95">Complete Mission</button>
                 <button @click="togglePause(element)" class="text-[10px] font-black uppercase tracking-[0.3em] transition-all flex items-center gap-3 px-6 py-2 rounded-full border border-white/10 hover:bg-white/5" :class="element.isPaused ? 'text-emerald-400 border-emerald-500/30' : 'text-slate-400 hover:text-amber-400'"><span class="flex h-2 w-2 relative"><span v-if="!element.isPaused" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2" :class="element.isPaused ? 'bg-emerald-500' : 'bg-indigo-500'"></span></span>{{ element.isPaused ? 'Resume Mission' : 'Pause Mission' }}</button>
               </div>
             </div>
@@ -128,30 +150,60 @@
         <h2 class="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-6 md:mb-10 px-2 italic text-center md:text-left">Backlog: {{ selectedDate }}</h2>
         <draggable v-model="backlogList" group="tasks" item-key="id" :delay="200" :delay-on-touch-only="true" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8">
           <template #item="{ element }">
-            <div class="post-it p-6 md:p-8 rounded-lg shadow-md cursor-grab active:cursor-grabbing transition-all duration-500 flex flex-col min-h-[240px] md:min-h-[260px] relative border-b-4" :style="{ backgroundColor: element.color || '#fff9c4', borderBottomColor: 'rgba(0,0,0,0.1)' }" :class="element.completed ? 'opacity-60 grayscale scale-[0.98] -translate-y-0 shadow-sm' : 'hover:shadow-xl md:hover:-translate-y-3'">
+            <div 
+              class="post-it p-6 md:p-8 rounded-lg shadow-md cursor-grab active:cursor-grabbing transition-all duration-500 flex flex-col min-h-[240px] md:min-h-[260px] relative border-b-4" 
+              :style="{ backgroundColor: element.color || '#fff9c4', borderBottomColor: 'rgba(0,0,0,0.1)' }"
+              :class="element.completed ? 'opacity-60 grayscale scale-[0.98] -translate-y-0 shadow-sm' : 'hover:shadow-xl md:hover:-translate-y-3'"
+            >
               <div class="flex items-start justify-between mb-3 md:mb-4">
-                <input type="checkbox" :checked="element.completed" @change="toggleTodo(element)" class="w-7 h-7 rounded border-slate-400 bg-white text-indigo-600 focus:ring-0 appearance-none border-2 checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer shadow-sm z-10" />
-                <button @click="deleteTodo(element.id)" class="p-2 text-slate-400 hover:text-red-500 transition-all z-10"><svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg></button>
+                <input 
+                  type="checkbox" 
+                  :checked="element.completed" 
+                  @change="toggleTodo(element)" 
+                  class="w-7 h-7 rounded border-slate-400 bg-white text-indigo-600 focus:ring-0 appearance-none border-2 checked:bg-indigo-600 checked:border-indigo-600 transition-all cursor-pointer shadow-sm z-10" 
+                />
+                <button @click="deleteTodo(element.id)" class="p-2 text-slate-400 hover:text-red-500 transition-all z-10">
+                  <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
+                </button>
               </div>
+
               <div class="flex-1 flex flex-col gap-2 relative">
                 <div class="relative inline-block w-full">
-                  <textarea v-model="element.text" @change="saveTodos(todos)" rows="2" class="font-black text-lg md:text-xl bg-transparent border-none p-0 focus:ring-0 w-full text-slate-900 resize-none leading-tight overflow-hidden transition-colors duration-500" :class="{ 'text-slate-400': element.completed }"></textarea>
-                  <div class="absolute top-[1.2em] left-0 h-[3px] bg-slate-400 transition-all duration-500 pointer-events-none" :style="{ width: element.completed ? '100%' : '0%' }"></div>
+                  <textarea 
+                    v-model="element.text" 
+                    @change="saveTodos(todos)" 
+                    rows="2" 
+                    class="font-black text-lg md:text-xl bg-transparent border-none p-0 focus:ring-0 w-full text-slate-900 resize-none leading-tight overflow-hidden transition-all duration-500" 
+                    :class="{ 'line-through text-slate-400 decoration-4 decoration-slate-400/60': element.completed }"
+                  ></textarea>
                 </div>
                 <textarea v-model="element.notes" @change="saveTodos(todos)" placeholder="Notes..." class="text-[10px] md:text-xs bg-white/30 border-none rounded-xl p-3 w-full h-16 md:h-20 resize-none focus:ring-1 focus:ring-black/10 outline-none transition-all text-black/70"></textarea>
-                <button v-if="!element.completed" @click.stop="moveToFocus(element)" class="md:hidden flex items-center justify-center gap-2 bg-indigo-600 text-white font-black py-3 rounded-xl mt-2 active:scale-95 transition-all text-xs uppercase tracking-widest shadow-md"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>Focus</button>
+                <button v-if="!element.completed" @click.stop="moveToFocus(element)" class="md:hidden flex items-center justify-center gap-2 bg-indigo-600 text-white font-black py-3 rounded-xl mt-2 active:scale-95 transition-all text-xs uppercase tracking-widest shadow-md">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Focus
+                </button>
               </div>
+
               <div class="mt-3 md:mt-4 flex items-end justify-between border-t border-black/5 pt-3 md:pt-4 relative">
                 <div class="flex flex-col relative min-w-[100px]">
                   <span class="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-tighter italic mb-1">Focus Log</span>
                   <div class="flex items-center gap-2">
-                    <button v-if="editingTimeId !== element.id" @click="editingTimeId = element.id" class="flex items-center gap-1 px-1 py-0.5 rounded hover:bg-black/5 transition-all"><span class="text-[10px] font-black uppercase text-indigo-600">{{ element.totalFocusMinutes || 0 }} MINS</span></button>
+                    <button v-if="editingTimeId !== element.id" @click="editingTimeId = element.id" class="flex items-center gap-1 px-1 py-0.5 rounded hover:bg-black/5 transition-all">
+                      <span class="text-[10px] font-black uppercase text-indigo-600">{{ element.totalFocusMinutes || 0 }} MINS</span>
+                    </button>
                     <input v-else v-model.number="element.totalFocusMinutes" type="number" v-focus @blur="editingTimeId = null; saveTodos(todos)" @keyup.enter="editingTimeId = null; saveTodos(todos)" class="w-10 text-[10px] font-black bg-white/50 border-none rounded p-0 text-center focus:ring-1 focus:ring-indigo-500" />
-                    <button @click="activeColorPickerId = (activeColorPickerId === element.id ? null : element.id)" class="p-1 text-slate-400 hover:text-indigo-600 transition-colors"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg></button>
+                    
+                    <button @click="activeColorPickerId = (activeColorPickerId === element.id ? null : element.id)" class="p-1 text-slate-400 hover:text-indigo-600 transition-colors">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg>
+                    </button>
                   </div>
-                  <div v-if="activeColorPickerId === element.id" class="absolute bottom-full left-0 mb-2 flex gap-1 p-2 bg-white rounded-lg shadow-2xl border border-slate-200 z-50"><button v-for="c in colorPalette" :key="c" @click="element.color = c; saveTodos(todos); activeColorPickerId = null" class="w-5 h-5 rounded-full border border-black/5" :style="{ backgroundColor: c }"></button></div>
+                  <div v-if="activeColorPickerId === element.id" class="absolute bottom-full left-0 mb-2 flex gap-1 p-2 bg-white rounded-lg shadow-2xl border border-slate-200 z-50">
+                    <button v-for="c in colorPalette" :key="c" @click="element.color = c; saveTodos(todos); activeColorPickerId = null" class="w-5 h-5 rounded-full border border-black/5" :style="{ backgroundColor: c }"></button>
+                  </div>
                 </div>
-                <div class="text-right shrink-0"><span class="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-tighter italic">Added</span><span class="text-[9px] font-bold text-slate-400 block leading-tight">{{ formatTime(element.createdAt) }}</span></div>
+                <div class="text-right shrink-0">
+                  <span class="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-tighter italic">Added</span>
+                  <span class="text-[9px] font-bold text-slate-400 block leading-tight">{{ formatTime(element.createdAt) }}</span>
+                </div>
               </div>
             </div>
           </template>
@@ -165,122 +217,208 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import draggable from 'vuedraggable'
 
-// --- 状態管理 ---
+// --- State Management ---
 const isLoggedIn = ref(false), isLoginMode = ref(true), authError = ref('')
 const authForm = ref({ username: '', password: '' })
 const token = ref(localStorage.getItem('pilot_token')), currentUser = ref(localStorage.getItem('pilot_username') || '')
 const isSidebarOpen = ref(false), mainContent = ref(null), editingTimeId = ref(null), activeColorPickerId = ref(null)
+
+// --- Configuration ---
 const colorPalette = ['#fff9c4', '#ffcfd2', '#cfdbff', '#e0ffcd', '#f3cfff'], vFocus = { mounted: (el) => el.focus() }
 
-// --- 認証 ---
+// --- Auth Logic (Fixed: .value references) ---
 const handleAuthAction = () => handleAuth(isLoginMode.value ? 'login' : 'signup')
 const handleAuth = async (action) => {
-  if (!authForm.value.username || !authForm.value.password) { authError.value = "ID and key required."; return; }
+  if (!authForm.value.username || !authForm.value.password) { 
+    authError.value = "ID and key required."; 
+    return; 
+  }
   try {
-    const res = await fetch(`/api/auth?action=${action}`, { method: 'POST', body: JSON.stringify(authForm.value), headers: { 'Content-Type': 'application/json' } })
+    const res = await fetch(`/api/auth?action=${action}`, { 
+      method: 'POST', 
+      body: JSON.stringify(authForm.value),
+      headers: { 'Content-Type': 'application/json' }
+    })
     if (res.ok) {
-      if (action === 'signup') { isLoginMode.value = true; authError.value = "Created! Please login."; } 
-      else {
-        const data = await res.json(); token.value = data.token; currentUser.value = authForm.value.username;
-        localStorage.setItem('pilot_token', data.token); localStorage.setItem('pilot_username', currentUser.value);
-        isLoggedIn.value = true; fetchTodos();
+      if (action === 'signup') { 
+        isLoginMode.value = true; 
+        authError.value = "Account created! Please login.";
+      } else {
+        const data = await res.json();
+        token.value = data.token;
+        currentUser.value = authForm.value.username;
+        localStorage.setItem('pilot_token', data.token);
+        localStorage.setItem('pilot_username', currentUser.value);
+        isLoggedIn.value = true;
+        fetchTodos();
       }
-    } else { authError.value = "Denied. Check ID/PASS."; }
-  } catch (e) { authError.value = "System Error."; }
+    } else {
+      authError.value = "Access Denied. Check ID/PASS.";
+    }
+  } catch (e) {
+    authError.value = "System Error.";
+  }
 }
-const logout = () => { localStorage.removeItem('pilot_token'); localStorage.removeItem('pilot_username'); window.location.reload(); }
 
-// --- データ & カレンダー ---
-const todos = ref([]), newTodo = ref(''), selectedDate = ref(new Date().toLocaleDateString('en-CA'))
+const logout = () => {
+  localStorage.removeItem('pilot_token');
+  localStorage.removeItem('pilot_username');
+  window.location.reload();
+}
+
+// --- Data Management & Calendar ---
+const todos = ref([])
+const newTodo = ref('')
+const selectedDate = ref(new Date().toLocaleDateString('en-CA'))
 const elapsedTime = ref('0 min'), seconds = ref(0); let timerInterval = null
 const calendarDate = ref(new Date())
-const currentYear = computed(() => calendarDate.value.getFullYear()), currentMonth = computed(() => calendarDate.value.getMonth())
+
+const currentYear = computed(() => calendarDate.value.getFullYear())
+const currentMonth = computed(() => calendarDate.value.getMonth())
 const currentMonthName = computed(() => calendarDate.value.toLocaleString('en-US', { month: 'long' }))
 const daysInMonth = computed(() => new Date(currentYear.value, currentMonth.value + 1, 0).getDate())
 const calendarPadding = computed(() => new Date(currentYear.value, currentMonth.value, 1).getDay())
+
 const prevMonth = () => { calendarDate.value = new Date(currentYear.value, currentMonth.value - 1, 1) }
 const nextMonth = () => { calendarDate.value = new Date(currentYear.value, currentMonth.value + 1, 1) }
-const goToToday = () => { const n = new Date(); calendarDate.value = new Date(n.getFullYear(), n.getMonth(), 1); selectedDate.value = n.toLocaleDateString('en-CA'); isSidebarOpen.value = false; }
+const goToToday = () => {
+  const now = new Date()
+  calendarDate.value = new Date(now.getFullYear(), now.getMonth(), 1)
+  selectedDate.value = now.toLocaleDateString('en-CA')
+  isSidebarOpen.value = false
+}
+
 const formatDate = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 const isDateSelected = (day) => selectedDate.value === formatDate(currentYear.value, currentMonth.value, day)
 
-// --- リアクティブ同期 ---
-const backlogList = computed({ get: () => todos.value.filter(t => t.targetDate === selectedDate.value && !t.isWorking), set: (v) => syncChanges(v, false) })
-const focusList = computed({ get: () => todos.value.filter(t => t.isWorking), set: (v) => syncChanges(v, true) })
-const syncChanges = (items, isWorking) => {
+// --- Drag & Drop Sync ---
+const backlogList = computed({ 
+  get: () => todos.value.filter(t => t.targetDate === selectedDate.value && !t.isWorking), 
+  set: (val) => syncChanges(val, false) 
+})
+const focusList = computed({ 
+  get: () => todos.value.filter(t => t.isWorking), 
+  set: (val) => syncChanges(val, true) 
+})
+
+const syncChanges = (newItems, isWorking) => {
   const others = todos.value.filter(t => isWorking ? !t.isWorking : (t.isWorking || t.targetDate !== selectedDate.value))
-  const updated = items.map(t => { 
-    if (isWorking && !t.isWorking) { t.focusStartedAt = new Date().toISOString(); t.isPaused = false; t.accumulatedMs = 0; } 
-    return { ...t, isWorking, targetDate: isWorking ? t.targetDate : selectedDate.value } 
+  const updated = newItems.map(t => {
+    if (isWorking && !t.isWorking) {
+      t.focusStartedAt = new Date().toISOString()
+      t.isPaused = false
+      t.accumulatedMs = 0
+    }
+    return { ...t, isWorking, targetDate: isWorking ? t.targetDate : selectedDate.value }
   })
   saveTodos([...others, ...updated])
 }
 
-// --- API ---
-const fetchTodos = async () => { if (!token.value) return; const r = await fetch('/api/todos', { headers: { "Authorization": `Bearer ${token.value}` } }); if (r.ok) todos.value = await r.json() || []; }
-const saveTodos = async (v) => { todos.value = v; if (!token.value) return; await fetch('/api/todos', { method: 'POST', body: JSON.stringify(v), headers: { "Authorization": `Bearer ${token.value}`, "Content-Type": "application/json" } }) }
+// --- API Communication ---
+const fetchTodos = async () => {
+  if (!token.value) return;
+  const res = await fetch('/api/todos', { headers: { "Authorization": `Bearer ${token.value}` } });
+  if (res.ok) todos.value = await res.json() || [];
+}
+const saveTodos = async (newTodos) => {
+  todos.value = newTodos;
+  if (!token.value) return;
+  await fetch('/api/todos', { method: 'POST', body: JSON.stringify(newTodos), headers: { "Authorization": `Bearer ${token.value}`, "Content-Type": "application/json" } });
+}
 
-// --- アクション ---
-const addTodo = () => { if (!newTodo.value.trim()) return; const item = { id: Date.now(), text: newTodo.value, notes: '', color: '#fff9c4', completed: false, targetDate: selectedDate.value, createdAt: new Date().toISOString(), isWorking: false, focusStartedAt: null, totalFocusMinutes: 0, isPaused: false, accumulatedMs: 0 }; saveTodos([item, ...todos.value]); newTodo.value = '' }
-const handleInputEnter = (e) => { if (!e.isComposing) addTodo() }
-const toggleTodo = (t) => { const o = todos.value.filter(x => x.id !== t.id); const u = { ...t, completed: !t.completed, isWorking: false }; saveTodos(u.completed ? [...o, u] : [u, ...o]) }
+// --- Task Actions ---
+const addTodo = () => { 
+  if (!newTodo.value.trim()) return; 
+  const item = { 
+    id: Date.now(), text: newTodo.value, notes: '', color: '#fff9c4', completed: false, 
+    targetDate: selectedDate.value, createdAt: new Date().toISOString(), isWorking: false, 
+    focusStartedAt: null, totalFocusMinutes: 0, isPaused: false, accumulatedMs: 0 
+  }; 
+  saveTodos([item, ...todos.value]);
+  newTodo.value = '' 
+}
+
+const toggleTodo = (todo) => { 
+  const others = todos.value.filter(t => t.id !== todo.id); 
+  const updated = { ...todo, completed: !todo.completed, isWorking: false }; 
+  saveTodos(updated.completed ? [...others, updated] : [updated, ...others]) 
+}
+
 const deleteTodo = (id) => { if (confirm("Remove?")) saveTodos(todos.value.filter(t => t.id !== id)) }
 
-// --- タイマーロジック ---
-const updateElapsedDisplay = (t) => {
-  if (!t.focusStartedAt) return;
-  const n = new Date(), cur = t.isPaused ? 0 : (n - new Date(t.focusStartedAt)), tot = (t.accumulatedMs || 0) + cur;
-  elapsedTime.value = `${(t.totalFocusMinutes || 0) + Math.floor(tot / 60000)} min`;
-  seconds.value = Math.floor((tot / 1000) % 60);
+// --- Timer Processing ---
+const updateElapsedDisplay = (task) => {
+  if (!task.focusStartedAt) return;
+  const now = new Date()
+  const currentSessionMs = task.isPaused ? 0 : (now - new Date(task.focusStartedAt))
+  const totalMsInSession = (task.accumulatedMs || 0) + currentSessionMs
+  elapsedTime.value = `${(task.totalFocusMinutes || 0) + Math.floor(totalMsInSession / 60000)} min`
+  seconds.value = Math.floor((totalMsInSession / 1000) % 60)
 }
-const startTimer = () => { stopTimer(); if (focusList.value.length > 0) { const t = focusList.value[0]; updateElapsedDisplay(t); if (!t.isPaused) timerInterval = setInterval(() => updateElapsedDisplay(t), 1000); } }
+
+const startTimer = () => {
+  stopTimer(); 
+  if (focusList.value.length > 0) { 
+    const task = focusList.value[0]; 
+    updateElapsedDisplay(task); 
+    if (!task.isPaused) timerInterval = setInterval(() => updateElapsedDisplay(task), 1000); 
+  }
+}
 const stopTimer = () => { if (timerInterval) clearInterval(timerInterval); elapsedTime.value = '0 min'; seconds.value = 0; }
 
-// --- タイマーボタンのアクション ---
+// --- Timer Button Actions ---
 const togglePause = (todo) => {
-  const n = new Date()
+  const now = new Date()
   if (!todo.isPaused) {
-    const s = n - new Date(todo.focusStartedAt || n)
-    todo.accumulatedMs = (todo.accumulatedMs || 0) + s
+    const sessionMs = now - new Date(todo.focusStartedAt || now)
+    todo.accumulatedMs = (todo.accumulatedMs || 0) + sessionMs
     todo.isPaused = true
   } else {
-    todo.focusStartedAt = n.toISOString()
+    todo.focusStartedAt = now.toISOString()
     todo.isPaused = false
   }
-  // 配列全体を再代入してリアクティビティを確実にする
   saveTodos([...todos.value])
 }
 
 const finishFocus = (todo) => {
-  const n = new Date(), cur = todo.isPaused ? 0 : (n - new Date(todo.focusStartedAt || n))
-  const tot = (todo.accumulatedMs || 0) + cur, min = Math.floor(tot / 60000)
-  const o = todos.value.filter(t => t.id !== todo.id)
-  saveTodos([...o, { ...todo, completed: true, isWorking: false, totalFocusMinutes: (todo.totalFocusMinutes || 0) + min, accumulatedMs: 0, isPaused: false }])
+  const now = new Date(), currentSessionMs = todo.isPaused ? 0 : (now - new Date(todo.focusStartedAt || now))
+  const totalMsInSession = (todo.accumulatedMs || 0) + currentSessionMs, sessionMinutes = Math.floor(totalMsInSession / 60000)
+  const others = todos.value.filter(t => t.id !== todo.id)
+  saveTodos([...others, { ...todo, completed: true, isWorking: false, totalFocusMinutes: (todo.totalFocusMinutes || 0) + sessionMinutes, accumulatedMs: 0, isPaused: false }])
 }
 
-const moveToFocus = (todo) => { 
-  const u = todos.value.map(t => { 
-    if (t.id === todo.id) return { ...t, isWorking: true, isPaused: false, accumulatedMs: 0, focusStartedAt: new Date().toISOString() }; 
-    if (t.isWorking) return { ...t, isWorking: false }; 
-    return t; 
-  }); 
-  saveTodos(u); isSidebarOpen.value = false; if (mainContent.value) mainContent.value.scrollTo({ top: 0, behavior: 'smooth' }); 
+const moveToFocus = (todo) => {
+  const updated = todos.value.map(t => {
+    if (t.id === todo.id) return { ...t, isWorking: true, isPaused: false, accumulatedMs: 0, focusStartedAt: new Date().toISOString() }
+    if (t.isWorking) return { ...t, isWorking: false }
+    return t
+  })
+  saveTodos(updated)
+  isSidebarOpen.value = false
+  if (mainContent.value) mainContent.value.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-watch(focusList, (v) => v.length > 0 ? startTimer() : stopTimer(), { deep: true, immediate: true })
+// --- Watchers & Lifecycle ---
+watch(focusList, (val) => val.length > 0 ? startTimer() : stopTimer(), { deep: true, immediate: true })
 const formatTime = (iso) => iso ? new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : ''
 onMounted(() => { if (token.value) { isLoggedIn.value = true; fetchTodos() } })
 </script>
 
 <style scoped>
+/* Basic Inputs */
 .auth-input { @apply w-full bg-slate-50 border border-slate-300 rounded-xl px-6 py-4 text-slate-800 text-lg focus:ring-2 focus:ring-slate-800 outline-none transition-all; }
 .timer-display { font-variant-numeric: tabular-nums; }
+
+/* Desktop Sticky Note Angles */
 @media (min-width: 768px) {
   .post-it { transform: rotate(-1.5deg); }
   .post-it:nth-child(even) { transform: rotate(1.2deg); }
 }
+
+/* Animation Effects */
 @keyframes float { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-10px) rotate(5deg); } }
 .animate-float { animation: float 6s ease-in-out infinite; }
+
 .focus-glow { position: absolute; inset: 0; animation: pulse 10s ease-in-out infinite; }
 .active-glow { background: radial-gradient(circle at 50% 50%, rgba(79, 70, 229, 0.1), transparent 70%); }
 .pause-glow { background: radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.15), transparent 70%); }
