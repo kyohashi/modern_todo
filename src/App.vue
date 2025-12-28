@@ -73,13 +73,7 @@
         </div>
         <div class="grid grid-cols-7 gap-1">
           <div v-for="n in calendarPadding" :key="'pad-'+n"></div>
-          <button 
-            v-for="day in daysInMonth" 
-            :key="day" 
-            @click="selectedDate = formatDate(currentYear, currentMonth, day); isSidebarOpen = false" 
-            class="h-8 w-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all" 
-            :class="isDateSelected(day) ? 'bg-indigo-600 text-white shadow-md scale-110' : 'hover:bg-slate-100 text-slate-600'"
-          >
+          <button v-for="day in daysInMonth" :key="day" @click="selectedDate = formatDate(currentYear, currentMonth, day); isSidebarOpen = false" class="h-8 w-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all" :class="isDateSelected(day) ? 'bg-indigo-600 text-white shadow-md scale-110' : 'hover:bg-slate-100 text-slate-600'">
             {{ day }}
           </button>
         </div>
@@ -99,6 +93,7 @@
     <div v-if="isSidebarOpen" @click="isSidebarOpen = false" class="fixed inset-0 bg-black/20 backdrop-blur-sm z-30 md:hidden"></div>
 
     <main ref="mainContent" class="flex-1 p-4 md:p-12 overflow-y-auto w-full">
+      
       <section class="mb-4 md:mb-12">
         <draggable 
           v-model="focusList" 
@@ -109,14 +104,22 @@
         >
           <template #item="{ element }">
             <div class="w-full max-w-3xl text-center space-y-6 md:space-y-12 z-20 text-white relative">
+              
               <div class="absolute top-6 left-6 md:top-12 md:left-12 animate-float opacity-80 pointer-events-none">
                 <svg class="w-10 h-10 md:w-[60px] md:h-[60px]" viewBox="0 0 24 24" fill="none"><path d="M12 2V6M12 6C8.686 6 6 8.686 6 12V22H18V12C18 8.686 15.314 6 12 6Z" :stroke="element.isPaused ? '#f59e0b' : '#818cf8'" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="2" :fill="element.isPaused ? '#f59e0b' : '#818cf8'"/></svg>
-                <div class="text-[6px] md:text-[8px] font-black mt-2 tracking-widest uppercase" :class="element.isPaused ? 'text-amber-500 animate-pulse' : 'text-indigo-400'">{{ element.isPaused ? 'Mission Paused' : 'System Active' }}</div>
+                <div class="text-[6px] md:text-[8px] font-black mt-2 tracking-widest uppercase" :class="element.isPaused ? 'text-amber-500 animate-pulse' : 'text-indigo-400'">
+                  {{ element.isPaused ? 'Mission Paused' : 'System Active' }}
+                </div>
               </div>
 
               <div class="relative flex items-center justify-center py-4 md:py-10">
-                <svg class="absolute w-[20rem] h-[20rem] md:w-[30rem] md:h-[30rem] pointer-events-none opacity-20" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" stroke="white" stroke-width="0.5" fill="none" /><circle cx="50" cy="10" r="1.5" :fill="element.isPaused ? '#f59e0b' : '#818cf8'" class="transition-transform duration-1000 ease-linear" :style="{ transform: `rotate(${seconds * 6}deg)`, transformOrigin: '50px 50px' }" /></svg>
-                <div class="timer-display font-mono text-6xl md:text-[10rem] font-black tracking-tighter drop-shadow-2xl leading-none relative z-10 transition-all duration-500" :class="element.isPaused ? 'opacity-30 scale-95 blur-[1px]' : 'opacity-100 scale-100'">{{ elapsedTime }}</div>
+                <svg class="absolute w-[20rem] h-[20rem] md:w-[30rem] md:h-[30rem] pointer-events-none opacity-20" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="40" stroke="white" stroke-width="0.5" fill="none" />
+                  <circle cx="50" cy="10" r="1.5" :fill="element.isPaused ? '#f59e0b' : '#818cf8'" class="transition-transform duration-1000 ease-linear" :style="{ transform: `rotate(${seconds * 6}deg)`, transformOrigin: '50px 50px' }" />
+                </svg>
+                <div class="timer-display font-mono text-6xl md:text-[10rem] font-black tracking-tighter drop-shadow-2xl leading-none relative z-10 transition-all duration-500" :class="element.isPaused ? 'opacity-30 scale-95 blur-[1px]' : 'opacity-100 scale-100'">
+                  {{ elapsedTime }}
+                </div>
               </div>
 
               <div class="space-y-2 md:space-y-4">
@@ -126,7 +129,13 @@
 
               <div class="flex flex-col items-center justify-center gap-6 w-full z-30">
                 <button @click="finishFocus(element)" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-50 text-white font-black px-12 py-5 md:px-20 md:py-7 rounded-xl md:rounded-2xl transition-all text-sm md:text-xl uppercase tracking-widest shadow-xl active:scale-95">Complete Mission</button>
-                <button @click="togglePause(element)" class="text-[10px] font-black uppercase tracking-[0.3em] transition-all flex items-center gap-3 px-6 py-2 rounded-full border border-white/10 hover:bg-white/5" :class="element.isPaused ? 'text-emerald-400 border-emerald-500/30' : 'text-slate-400 hover:text-amber-400'"><span class="flex h-2 w-2 relative"><span v-if="!element.isPaused" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2" :class="element.isPaused ? 'bg-emerald-500' : 'bg-indigo-500'"></span></span>{{ element.isPaused ? 'Resume Mission' : 'Pause Mission' }}</button>
+                <button @click="togglePause(element)" class="text-[10px] font-black uppercase tracking-[0.3em] transition-all flex items-center gap-3 px-6 py-2 rounded-full border border-white/10 hover:bg-white/5" :class="element.isPaused ? 'text-emerald-400 border-emerald-500/30' : 'text-slate-400 hover:text-amber-400'">
+                  <span class="flex h-2 w-2 relative">
+                    <span v-if="!element.isPaused" class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2" :class="element.isPaused ? 'bg-emerald-500' : 'bg-indigo-500'"></span>
+                  </span>
+                  {{ element.isPaused ? 'Resume Mission' : 'Pause Mission' }}
+                </button>
               </div>
             </div>
           </template>
@@ -183,6 +192,7 @@
                   ></textarea>
                 </div>
                 <textarea v-model="element.notes" @change="saveTodos(todos)" placeholder="Notes..." class="text-[10px] md:text-xs bg-white/30 border-none rounded-xl p-3 w-full h-16 md:h-20 resize-none focus:ring-1 focus:ring-black/10 outline-none transition-all text-black/70"></textarea>
+                
                 <button v-if="!element.completed" @click.stop="moveToFocus(element)" class="md:hidden flex items-center justify-center gap-2 bg-indigo-600 text-white font-black py-3 rounded-xl mt-2 active:scale-95 transition-all text-xs uppercase tracking-widest shadow-md">
                   <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg> Focus
                 </button>
@@ -193,7 +203,7 @@
                   <span class="text-[8px] md:text-[9px] font-black text-slate-400 uppercase tracking-tighter italic mb-1">Focus Log</span>
                   <div class="flex items-center gap-2">
                     <button v-if="editingTimeId !== element.id" @click="editingTimeId = element.id" class="flex items-center gap-1 px-1 py-0.5 rounded hover:bg-black/5 transition-all">
-                      <span class="text-[10px] font-black uppercase text-indigo-600">{{ element.totalFocusMinutes || 0 }} MINS</span>
+                      <span class="text-[10px] font-black uppercase text-indigo-600">{{ formatDuration(element.totalFocusMinutes || 0) }}</span>
                     </button>
                     <input v-else v-model.number="element.totalFocusMinutes" type="number" v-focus @blur="editingTimeId = null; saveTodos(todos)" @keyup.enter="editingTimeId = null; saveTodos(todos)" class="w-10 text-[10px] font-black bg-white/50 border-none rounded p-0 text-center focus:ring-1 focus:ring-indigo-500" />
                     
@@ -222,16 +232,16 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import draggable from 'vuedraggable'
 
-// --- State Management ---
+// --- Auth & Global State Management ---
 const isLoggedIn = ref(false), isLoginMode = ref(true), authError = ref('')
 const authForm = ref({ username: '', password: '' })
 const token = ref(localStorage.getItem('pilot_token')), currentUser = ref(localStorage.getItem('pilot_username') || '')
 const isSidebarOpen = ref(false), mainContent = ref(null), editingTimeId = ref(null), activeColorPickerId = ref(null)
 
-// --- Configuration ---
+// --- Configuration Constants ---
 const colorPalette = ['#fff9c4', '#ffcfd2', '#cfdbff', '#e0ffcd', '#f3cfff'], vFocus = { mounted: (el) => el.focus() }
 
-// --- Auth Logic ---
+// --- Auth Logic (Carefully validated for .value access) ---
 const handleAuthAction = () => handleAuth(isLoginMode.value ? 'login' : 'signup')
 const handleAuth = async (action) => {
   if (!authForm.value.username || !authForm.value.password) { 
@@ -258,21 +268,30 @@ const handleAuth = async (action) => {
 }
 const logout = () => { localStorage.removeItem('pilot_token'); localStorage.removeItem('pilot_username'); window.location.reload(); }
 
-// --- Data Management & Calendar ---
+// --- Task and Calendar Data Handling ---
 const todos = ref([]), newTodo = ref(''), selectedDate = ref(new Date().toLocaleDateString('en-CA'))
 const elapsedTime = ref('0 min'), seconds = ref(0); let timerInterval = null
 const calendarDate = ref(new Date())
+
 const currentYear = computed(() => calendarDate.value.getFullYear()), currentMonth = computed(() => calendarDate.value.getMonth())
 const currentMonthName = computed(() => calendarDate.value.toLocaleString('en-US', { month: 'long' }))
 const daysInMonth = computed(() => new Date(currentYear.value, currentMonth.value + 1, 0).getDate())
 const calendarPadding = computed(() => new Date(currentYear.value, currentMonth.value, 1).getDay())
-const prevMonth = () => { calendarDate.value = new Date(currentYear.value, currentMonth.value - 1, 1) }
-const nextMonth = () => { calendarDate.value = new Date(currentYear.value, currentMonth.value + 1, 1) }
+
+const prevMonth = () => { calendarDate.value = new Date(currentYear.value, currentMonth.value - 1, 1) }, nextMonth = () => { calendarDate.value = new Date(currentYear.value, currentMonth.value + 1, 1) }
 const goToToday = () => { const now = new Date(); calendarDate.value = new Date(now.getFullYear(), now.getMonth(), 1); selectedDate.value = now.toLocaleDateString('en-CA'); isSidebarOpen.value = false; }
 const formatDate = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 const isDateSelected = (day) => selectedDate.value === formatDate(currentYear.value, currentMonth.value, day)
 
-// --- Drag & Drop Sync ---
+// --- Helper: Human-readable time duration formatting ---
+const formatDuration = (totalMinutes) => {
+  if (totalMinutes < 60) return `${totalMinutes} min`;
+  const hours = Math.floor(totalMinutes / 60);
+  const mins = totalMinutes % 60;
+  return `${hours}h ${mins}m`;
+}
+
+// --- List Synchronization for Drag & Drop ---
 const backlogList = computed({ get: () => todos.value.filter(t => t.targetDate === selectedDate.value && !t.isWorking), set: (val) => syncChanges(val, false) })
 const focusList = computed({ get: () => todos.value.filter(t => t.isWorking), set: (val) => syncChanges(val, true) })
 const syncChanges = (newItems, isWorking) => {
@@ -284,50 +303,40 @@ const syncChanges = (newItems, isWorking) => {
   saveTodos([...others, ...updated])
 }
 
-// --- API ---
+// --- Server Persistence (API calls) ---
 const fetchTodos = async () => { if (!token.value) return; const res = await fetch('/api/todos', { headers: { "Authorization": `Bearer ${token.value}` } }); if (res.ok) todos.value = await res.json() || []; }
 const saveTodos = async (newTodos) => { todos.value = newTodos; if (!token.value) return; await fetch('/api/todos', { method: 'POST', body: JSON.stringify(newTodos), headers: { "Authorization": `Bearer ${token.value}`, "Content-Type": "application/json" } }) }
 
-// --- Input & Task Actions ---
-const handleInputEnter = (e) => { 
-  // Standard logic to support Enter key addition while ignoring IME selection
-  if (!e.isComposing) {
-    addTodo();
-  }
-}
+// --- Component Actions ---
+const handleInputEnter = (e) => { if (!e.isComposing) addTodo() }
 const addTodo = () => { if (!newTodo.value.trim()) return; const item = { id: Date.now(), text: newTodo.value, notes: '', color: '#fff9c4', completed: false, targetDate: selectedDate.value, createdAt: new Date().toISOString(), isWorking: false, focusStartedAt: null, totalFocusMinutes: 0, isPaused: false, accumulatedMs: 0 }; saveTodos([item, ...todos.value]); newTodo.value = '' }
 const toggleTodo = (todo) => { const others = todos.value.filter(t => t.id !== todo.id); const updated = { ...todo, completed: !todo.completed, isWorking: false }; saveTodos(updated.completed ? [...others, updated] : [updated, ...others]) }
 const deleteTodo = (id) => { if (confirm("Remove?")) saveTodos(todos.value.filter(t => t.id !== id)) }
 
-// --- Timer Logic ---
+// --- Focus Session Engine (Timer) ---
 const updateElapsedDisplay = (task) => {
   if (!task.focusStartedAt) return;
-  const now = new Date(), currentSessionMs = task.isPaused ? 0 : (now - new Date(task.focusStartedAt)), totalMsInSession = (task.accumulatedMs || 0) + currentSessionMs;
-  elapsedTime.value = `${(task.totalFocusMinutes || 0) + Math.floor(totalMsInSession / 60000)} min`;
+  const now = new Date(), currentSessionMs = task.isPaused ? 0 : (now - new Date(task.focusStartedAt || now)), totalMsInSession = (task.accumulatedMs || 0) + currentSessionMs;
+  const totalMinutes = (task.totalFocusMinutes || 0) + Math.floor(totalMsInSession / 60000);
+  elapsedTime.value = formatDuration(totalMinutes);
   seconds.value = Math.floor((totalMsInSession / 1000) % 60);
 }
 const startTimer = () => { stopTimer(); if (focusList.value.length > 0) { const task = focusList.value[0]; updateElapsedDisplay(task); if (!task.isPaused) timerInterval = setInterval(() => updateElapsedDisplay(task), 1000); } }
 const stopTimer = () => { if (timerInterval) clearInterval(timerInterval); elapsedTime.value = '0 min'; seconds.value = 0; }
 
+// --- Session Life Cycle Control ---
 const togglePause = (todo) => {
-  const now = new Date()
-  if (!todo.isPaused) {
-    const sessionMs = now - new Date(todo.focusStartedAt || now)
-    todo.accumulatedMs = (todo.accumulatedMs || 0) + sessionMs; todo.isPaused = true
-  } else {
-    todo.focusStartedAt = now.toISOString(); todo.isPaused = false
-  }
-  saveTodos([...todos.value])
+  const now = new Date(); if (!todo.isPaused) { const s = now - new Date(todo.focusStartedAt || now); todo.accumulatedMs = (todo.accumulatedMs || 0) + s; todo.isPaused = true; } else { todo.focusStartedAt = now.toISOString(); todo.isPaused = false; }
+  saveTodos([...todos.value]);
 }
-
 const finishFocus = (todo) => {
   const now = new Date(), currentSessionMs = todo.isPaused ? 0 : (now - new Date(todo.focusStartedAt || now))
   const totalMsInSession = (todo.accumulatedMs || 0) + currentSessionMs, sessionMinutes = Math.floor(totalMsInSession / 60000), others = todos.value.filter(t => t.id !== todo.id)
-  saveTodos([...others, { ...todo, completed: true, isWorking: false, totalFocusMinutes: (todo.totalFocusMinutes || 0) + sessionMinutes, accumulatedMs: 0, isPaused: false }])
+  saveTodos([...others, { ...todo, completed: true, isWorking: false, totalFocusMinutes: (todo.totalFocusMinutes || 0) + sessionMinutes, accumulatedMs: 0, isPaused: false }]);
 }
-
 const moveToFocus = (todo) => { const updated = todos.value.map(t => { if (t.id === todo.id) return { ...t, isWorking: true, isPaused: false, accumulatedMs: 0, focusStartedAt: new Date().toISOString() }; if (t.isWorking) return { ...t, isWorking: false }; return t; }); saveTodos(updated); isSidebarOpen.value = false; if (mainContent.value) mainContent.value.scrollTo({ top: 0, behavior: 'smooth' }); }
 
+// --- Reactivity Watchers & Life Cycle Hooks ---
 watch(focusList, (val) => val.length > 0 ? startTimer() : stopTimer(), { deep: true, immediate: true })
 const formatTime = (iso) => iso ? new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : ''
 onMounted(() => { if (token.value) { isLoggedIn.value = true; fetchTodos() } })
