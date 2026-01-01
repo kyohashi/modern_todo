@@ -150,14 +150,28 @@
         </draggable>
       </section>
 
-      <div class="flex flex-col md:flex-row gap-4 mb-10 md:mb-20">
-        <input 
-          v-model="newTodo" 
-          @keydown.enter="handleInputEnter" 
-          placeholder="What's next?" 
-          class="flex-1 bg-white border border-slate-300 rounded-xl md:rounded-2xl px-6 py-5 md:px-10 md:py-7 shadow-sm text-lg md:text-2xl font-medium focus:ring-8 focus:ring-indigo-500/5 transition-all outline-none" 
-        />
-        <button @click="addTodo" class="bg-slate-800 text-white font-black px-8 py-5 md:px-14 md:py-7 rounded-xl md:rounded-2xl hover:bg-slate-900 transition-all text-sm md:text-xl shadow-lg active:scale-95 uppercase tracking-widest">Add</button>
+      <div class="flex flex-col gap-3 mb-10 md:mb-20">
+        <div class="flex flex-col md:flex-row gap-4">
+          <input 
+            v-model="newTodo" 
+            @keydown.enter="handleInputEnter" 
+            placeholder="What's next?" 
+            class="flex-1 bg-white border border-slate-300 rounded-xl md:rounded-2xl px-6 py-5 md:px-10 md:py-7 shadow-sm text-lg md:text-2xl font-medium focus:ring-8 focus:ring-indigo-500/5 transition-all outline-none" 
+          />
+          <button @click="() => addTodo()" class="bg-slate-800 text-white font-black px-8 py-5 md:px-14 md:py-7 rounded-xl md:rounded-2xl hover:bg-slate-900 transition-all text-sm md:text-xl shadow-lg active:scale-95 uppercase tracking-widest">Add</button>
+        </div>
+
+        <div class="flex flex-wrap gap-2 px-2">
+          <button 
+            v-for="task in routineTasks" 
+            :key="task" 
+            @click="addTodo(task)"
+            class="group flex items-center gap-2 bg-white/40 hover:bg-white border border-slate-200/50 hover:border-indigo-200 text-slate-500 hover:text-indigo-600 px-4 py-2 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest transition-all shadow-sm active:scale-95"
+          >
+            <span class="text-indigo-400 group-hover:text-indigo-600 text-lg leading-none mb-0.5">+</span>
+            {{ task }}
+          </button>
+        </div>
       </div>
 
       <section class="pb-20">
@@ -240,6 +254,8 @@ const isSidebarOpen = ref(false), mainContent = ref(null), editingTimeId = ref(n
 
 // --- Configuration Constants ---
 const colorPalette = ['#fff9c4', '#ffcfd2', '#cfdbff', '#e0ffcd', '#f3cfff'], vFocus = { mounted: (el) => el.focus() }
+// Routine tasks configuration
+const routineTasks = ['stretch', 'w&h', 'medicine']
 
 // --- Auth Logic (Carefully validated for .value access) ---
 const handleAuthAction = () => handleAuth(isLoginMode.value ? 'login' : 'signup')
@@ -309,7 +325,38 @@ const saveTodos = async (newTodos) => { todos.value = newTodos; if (!token.value
 
 // --- Component Actions ---
 const handleInputEnter = (e) => { if (!e.isComposing) addTodo() }
-const addTodo = () => { if (!newTodo.value.trim()) return; const item = { id: Date.now(), text: newTodo.value, notes: '', color: '#fff9c4', completed: false, targetDate: selectedDate.value, createdAt: new Date().toISOString(), isWorking: false, focusStartedAt: null, totalFocusMinutes: 0, isPaused: false, accumulatedMs: 0 }; saveTodos([item, ...todos.value]); newTodo.value = '' }
+
+// Modified addTodo to support direct text input from chips
+const addTodo = (taskText = null) => {
+  // Determine text content: prioritize argument (from chips), fallback to input model
+  const isManualInput = typeof taskText !== 'string'
+  const textToAdd = isManualInput ? newTodo.value : taskText
+  
+  if (!textToAdd || !textToAdd.trim()) return;
+
+  const item = { 
+    id: Date.now(), 
+    text: textToAdd.trim(), 
+    notes: '', 
+    color: '#fff9c4', 
+    completed: false, 
+    targetDate: selectedDate.value, 
+    createdAt: new Date().toISOString(), 
+    isWorking: false, 
+    focusStartedAt: null, 
+    totalFocusMinutes: 0, 
+    isPaused: false, 
+    accumulatedMs: 0 
+  }; 
+  
+  saveTodos([item, ...todos.value]); 
+  
+  // Only clear the input box if the addition came from the input box
+  if (isManualInput) {
+    newTodo.value = ''
+  }
+}
+
 const toggleTodo = (todo) => { const others = todos.value.filter(t => t.id !== todo.id); const updated = { ...todo, completed: !todo.completed, isWorking: false }; saveTodos(updated.completed ? [...others, updated] : [updated, ...others]) }
 const deleteTodo = (id) => { if (confirm("Remove?")) saveTodos(todos.value.filter(t => t.id !== id)) }
 
