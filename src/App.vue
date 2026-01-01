@@ -73,26 +73,9 @@
         </div>
         <div class="grid grid-cols-7 gap-1">
           <div v-for="n in calendarPadding" :key="'pad-'+n"></div>
-          <button 
-            v-for="day in daysInMonth" 
-            :key="day" 
-            @click="selectedDate = formatDate(currentYear, currentMonth, day); isSidebarOpen = false" 
-            class="h-8 w-8 flex flex-col items-center justify-center rounded-lg text-[10px] font-bold transition-all relative" 
-            :class="[
-              getDayIntensityClass(day),
-              isDateSelected(day) ? 'ring-2 ring-indigo-600 ring-offset-1 z-10' : 'hover:scale-105'
-            ]"
-          >
-            <span :class="getDayTextColor(day)">{{ day }}</span>
+          <button v-for="day in daysInMonth" :key="day" @click="selectedDate = formatDate(currentYear, currentMonth, day); isSidebarOpen = false" class="h-8 w-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all" :class="isDateSelected(day) ? 'bg-indigo-600 text-white shadow-md scale-110' : 'hover:bg-slate-100 text-slate-600'">
+            {{ day }}
           </button>
-        </div>
-        <div class="mt-4 flex items-center justify-end gap-1 px-1">
-           <span class="text-[7px] text-slate-400 uppercase font-black mr-1 tracking-tighter">Intensity</span>
-           <div class="w-2 h-2 rounded-sm bg-slate-100"></div>
-           <div class="w-2 h-2 rounded-sm bg-indigo-100"></div>
-           <div class="w-2 h-2 rounded-sm bg-indigo-300"></div>
-           <div class="w-2 h-2 rounded-sm bg-indigo-500"></div>
-           <div class="w-2 h-2 rounded-sm bg-indigo-700"></div>
         </div>
       </div>
 
@@ -181,7 +164,7 @@
 
         <div class="px-1 mt-1">
           <div class="flex items-center gap-3 mb-1.5">
-            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 italic ml-1">Daily Routines</p>
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest italic">Daily Routines</p>
             
             <div class="flex items-center gap-2">
               <button 
@@ -302,7 +285,7 @@ const colorPalette = ['#fff9c4', '#ffcfd2', '#cfdbff', '#e0ffcd', '#f3cfff'], vF
 const isManagingRoutines = ref(false)
 const newRoutineText = ref('')
 
-// --- Auth Logic (Carefully validated for .value access) ---
+// --- Auth Logic ---
 const handleAuthAction = () => handleAuth(isLoginMode.value ? 'login' : 'signup')
 const handleAuth = async (action) => {
   if (!authForm.value.username || !authForm.value.password) { 
@@ -344,33 +327,6 @@ const goToToday = () => { const now = new Date(); calendarDate.value = new Date(
 const formatDate = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 const isDateSelected = (day) => selectedDate.value === formatDate(currentYear.value, currentMonth.value, day)
 
-// --- Heatmap Logic: Calculate intensity for the calendar ---
-const dailyFocusStats = computed(() => {
-  const stats = {};
-  todos.value.forEach(t => {
-    if (t.isRoutine || !t.targetDate) return;
-    stats[t.targetDate] = (stats[t.targetDate] || 0) + (t.totalFocusMinutes || 0);
-  });
-  return stats;
-});
-
-const getDayIntensityClass = (day) => {
-  const dateStr = formatDate(currentYear.value, currentMonth.value, day);
-  const totalMins = dailyFocusStats.value[dateStr] || 0;
-  
-  if (totalMins === 0) return 'bg-slate-50'; // No focus
-  if (totalMins < 30) return 'bg-indigo-100'; // Light focus
-  if (totalMins < 60) return 'bg-indigo-300'; // Moderate focus
-  if (totalMins < 120) return 'bg-indigo-500'; // High focus
-  return 'bg-indigo-700'; // Deep focus (Zen)
-};
-
-const getDayTextColor = (day) => {
-  const dateStr = formatDate(currentYear.value, currentMonth.value, day);
-  const totalMins = dailyFocusStats.value[dateStr] || 0;
-  return totalMins > 60 ? 'text-white' : 'text-slate-600';
-};
-
 // --- Helper: Human-readable time duration formatting ---
 const formatDuration = (totalMinutes) => {
   if (totalMinutes < 60) return `${totalMinutes} min`;
@@ -380,7 +336,6 @@ const formatDuration = (totalMinutes) => {
 }
 
 // --- List Synchronization for Drag & Drop ---
-// Updated to filter out routine templates
 const backlogList = computed({ 
   get: () => todos.value.filter(t => t.targetDate === selectedDate.value && !t.isWorking && !t.isRoutine), 
   set: (val) => syncChanges(val, false) 
@@ -389,11 +344,9 @@ const focusList = computed({
   get: () => todos.value.filter(t => t.isWorking && !t.isRoutine), 
   set: (val) => syncChanges(val, true) 
 })
-// Computed property for displaying routine chips
 const routineList = computed(() => todos.value.filter(t => t.isRoutine))
 
 const syncChanges = (newItems, isWorking) => {
-  // Keep routines and other date tasks untouched
   const others = todos.value.filter(t => t.isRoutine || (isWorking ? !t.isWorking : (t.isWorking || t.targetDate !== selectedDate.value)))
   const updated = newItems.map(t => { 
     if (isWorking && !t.isWorking) { t.focusStartedAt = new Date().toISOString(); t.isPaused = false; t.accumulatedMs = 0; } 
@@ -402,62 +355,29 @@ const syncChanges = (newItems, isWorking) => {
   saveTodos([...others, ...updated])
 }
 
-// --- Server Persistence (API calls) ---
+// --- Server Persistence ---
 const fetchTodos = async () => { if (!token.value) return; const res = await fetch('/api/todos', { headers: { "Authorization": `Bearer ${token.value}` } }); if (res.ok) todos.value = await res.json() || []; }
 const saveTodos = async (newTodos) => { todos.value = newTodos; if (!token.value) return; await fetch('/api/todos', { method: 'POST', body: JSON.stringify(newTodos), headers: { "Authorization": `Bearer ${token.value}`, "Content-Type": "application/json" } }) }
 
 // --- Component Actions ---
 const handleInputEnter = (e) => { if (!e.isComposing) addTodo() }
-
-// Unified add logic
 const addTodo = (taskText = null) => {
   const isManualInput = typeof taskText !== 'string'
   const textToAdd = isManualInput ? newTodo.value : taskText
-  
   if (!textToAdd || !textToAdd.trim()) return;
-
-  const item = { 
-    id: Date.now(), 
-    text: textToAdd.trim(), 
-    notes: '', 
-    color: '#fff9c4', 
-    completed: false, 
-    targetDate: selectedDate.value, 
-    createdAt: new Date().toISOString(), 
-    isWorking: false, 
-    focusStartedAt: null, 
-    totalFocusMinutes: 0, 
-    isPaused: false, 
-    accumulatedMs: 0,
-    isRoutine: false // Regular task
-  }; 
-  
+  const item = { id: Date.now(), text: textToAdd.trim(), notes: '', color: '#fff9c4', completed: false, targetDate: selectedDate.value, createdAt: new Date().toISOString(), isWorking: false, focusStartedAt: null, totalFocusMinutes: 0, isPaused: false, accumulatedMs: 0, isRoutine: false }; 
   saveTodos([item, ...todos.value]); 
   if (isManualInput) newTodo.value = ''
 }
 
-// Routine Management Logic
 const handleRoutineClick = (routine) => {
-  if (isManagingRoutines.value) {
-    if(confirm(`Delete routine "${routine.text}"?`)) {
-      saveTodos(todos.value.filter(t => t.id !== routine.id))
-    }
-  } else {
-    addTodo(routine.text)
-  }
+  if (isManagingRoutines.value) { if(confirm(`Delete routine "${routine.text}"?`)) saveTodos(todos.value.filter(t => t.id !== routine.id)) } 
+  else addTodo(routine.text)
 }
-
 const addRoutine = () => {
   if (!newRoutineText.value.trim()) return;
-  const routineItem = {
-    id: Date.now(),
-    text: newRoutineText.value.trim(),
-    createdAt: new Date().toISOString(),
-    isRoutine: true, // Mark as a routine template
-    color: '#fff9c4'
-  }
-  saveTodos([...todos.value, routineItem])
-  newRoutineText.value = ''
+  const routineItem = { id: Date.now(), text: newRoutineText.value.trim(), createdAt: new Date().toISOString(), isRoutine: true, color: '#fff9c4' }
+  saveTodos([...todos.value, routineItem]); newRoutineText.value = ''
 }
 
 const toggleTodo = (todo) => { const others = todos.value.filter(t => t.id !== todo.id); const updated = { ...todo, completed: !todo.completed, isWorking: false }; saveTodos(updated.completed ? [...others, updated] : [updated, ...others]) }
@@ -474,9 +394,9 @@ const updateElapsedDisplay = (task) => {
 const startTimer = () => { stopTimer(); if (focusList.value.length > 0) { const task = focusList.value[0]; updateElapsedDisplay(task); if (!task.isPaused) timerInterval = setInterval(() => updateElapsedDisplay(task), 1000); } }
 const stopTimer = () => { if (timerInterval) clearInterval(timerInterval); elapsedTime.value = '0 min'; seconds.value = 0; }
 
-// --- Session Life Cycle Control ---
 const togglePause = (todo) => {
-  const now = new Date(); if (!todo.isPaused) { const s = now - new Date(todo.focusStartedAt || now); todo.accumulatedMs = (todo.accumulatedMs || 0) + s; todo.isPaused = true; } else { todo.focusStartedAt = now.toISOString(); todo.isPaused = false; }
+  const now = new Date(); if (!todo.isPaused) { const s = now - new Date(todo.focusStartedAt || now); todo.accumulatedMs = (todo.accumulatedMs || 0) + s; todo.isPaused = true; } 
+  else { todo.focusStartedAt = now.toISOString(); todo.isPaused = false; }
   saveTodos([...todos.value]);
 }
 const finishFocus = (todo) => {
@@ -486,7 +406,6 @@ const finishFocus = (todo) => {
 }
 const moveToFocus = (todo) => { const updated = todos.value.map(t => { if (t.id === todo.id) return { ...t, isWorking: true, isPaused: false, accumulatedMs: 0, focusStartedAt: new Date().toISOString() }; if (t.isWorking) return { ...t, isWorking: false }; return t; }); saveTodos(updated); isSidebarOpen.value = false; if (mainContent.value) mainContent.value.scrollTo({ top: 0, behavior: 'smooth' }); }
 
-// --- Reactivity Watchers & Life Cycle Hooks ---
 watch(focusList, (val) => val.length > 0 ? startTimer() : stopTimer(), { deep: true, immediate: true })
 const formatTime = (iso) => iso ? new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : ''
 onMounted(() => { if (token.value) { isLoggedIn.value = true; fetchTodos() } })
