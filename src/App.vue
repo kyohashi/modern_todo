@@ -162,7 +162,7 @@
         </div>
 
         <div class="px-2">
-          <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-2 italic ml-1">Daily Routines</p>
+          <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 italic ml-1">Daily Routines</p>
           
           <div class="flex items-start gap-2 flex-wrap">
             <div class="flex flex-wrap gap-2">
