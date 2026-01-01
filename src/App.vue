@@ -73,9 +73,26 @@
         </div>
         <div class="grid grid-cols-7 gap-1">
           <div v-for="n in calendarPadding" :key="'pad-'+n"></div>
-          <button v-for="day in daysInMonth" :key="day" @click="selectedDate = formatDate(currentYear, currentMonth, day); isSidebarOpen = false" class="h-8 w-8 flex items-center justify-center rounded-lg text-xs font-bold transition-all" :class="isDateSelected(day) ? 'bg-indigo-600 text-white shadow-md scale-110' : 'hover:bg-slate-100 text-slate-600'">
-            {{ day }}
+          <button 
+            v-for="day in daysInMonth" 
+            :key="day" 
+            @click="selectedDate = formatDate(currentYear, currentMonth, day); isSidebarOpen = false" 
+            class="h-8 w-8 flex flex-col items-center justify-center rounded-lg text-[10px] font-bold transition-all relative" 
+            :class="[
+              getDayIntensityClass(day),
+              isDateSelected(day) ? 'ring-2 ring-indigo-600 ring-offset-1 z-10' : 'hover:scale-105'
+            ]"
+          >
+            <span :class="getDayTextColor(day)">{{ day }}</span>
           </button>
+        </div>
+        <div class="mt-4 flex items-center justify-end gap-1 px-1">
+           <span class="text-[7px] text-slate-400 uppercase font-black mr-1 tracking-tighter">Intensity</span>
+           <div class="w-2 h-2 rounded-sm bg-slate-100"></div>
+           <div class="w-2 h-2 rounded-sm bg-indigo-100"></div>
+           <div class="w-2 h-2 rounded-sm bg-indigo-300"></div>
+           <div class="w-2 h-2 rounded-sm bg-indigo-500"></div>
+           <div class="w-2 h-2 rounded-sm bg-indigo-700"></div>
         </div>
       </div>
 
@@ -164,7 +181,7 @@
 
         <div class="px-1 mt-1">
           <div class="flex items-center gap-3 mb-1.5">
-            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest italic">Daily Routines</p>
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 italic ml-1">Daily Routines</p>
             
             <div class="flex items-center gap-2">
               <button 
@@ -326,6 +343,33 @@ const prevMonth = () => { calendarDate.value = new Date(currentYear.value, curre
 const goToToday = () => { const now = new Date(); calendarDate.value = new Date(now.getFullYear(), now.getMonth(), 1); selectedDate.value = now.toLocaleDateString('en-CA'); isSidebarOpen.value = false; }
 const formatDate = (y, m, d) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`
 const isDateSelected = (day) => selectedDate.value === formatDate(currentYear.value, currentMonth.value, day)
+
+// --- Heatmap Logic: Calculate intensity for the calendar ---
+const dailyFocusStats = computed(() => {
+  const stats = {};
+  todos.value.forEach(t => {
+    if (t.isRoutine || !t.targetDate) return;
+    stats[t.targetDate] = (stats[t.targetDate] || 0) + (t.totalFocusMinutes || 0);
+  });
+  return stats;
+});
+
+const getDayIntensityClass = (day) => {
+  const dateStr = formatDate(currentYear.value, currentMonth.value, day);
+  const totalMins = dailyFocusStats.value[dateStr] || 0;
+  
+  if (totalMins === 0) return 'bg-slate-50'; // No focus
+  if (totalMins < 30) return 'bg-indigo-100'; // Light focus
+  if (totalMins < 60) return 'bg-indigo-300'; // Moderate focus
+  if (totalMins < 120) return 'bg-indigo-500'; // High focus
+  return 'bg-indigo-700'; // Deep focus (Zen)
+};
+
+const getDayTextColor = (day) => {
+  const dateStr = formatDate(currentYear.value, currentMonth.value, day);
+  const totalMins = dailyFocusStats.value[dateStr] || 0;
+  return totalMins > 60 ? 'text-white' : 'text-slate-600';
+};
 
 // --- Helper: Human-readable time duration formatting ---
 const formatDuration = (totalMinutes) => {
