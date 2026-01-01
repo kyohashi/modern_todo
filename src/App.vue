@@ -161,37 +161,41 @@
           <button @click="() => addTodo()" class="bg-slate-800 text-white font-black px-8 py-5 md:px-14 md:py-7 rounded-xl md:rounded-2xl hover:bg-slate-900 transition-all text-sm md:text-xl shadow-lg active:scale-95 uppercase tracking-widest">Add</button>
         </div>
 
-        <div class="flex items-start gap-2 px-2 flex-wrap">
-          <div class="flex flex-wrap gap-2">
-            <button 
-              v-for="task in routineList" 
-              :key="task.id" 
-              @click="handleRoutineClick(task)"
-              class="group flex items-center gap-2 bg-white/40 border border-slate-200/50 px-4 py-2 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest transition-all shadow-sm active:scale-95"
-              :class="isManagingRoutines ? 'hover:bg-red-50 hover:border-red-200 text-slate-500 hover:text-red-500' : 'hover:bg-white hover:border-indigo-200 text-slate-500 hover:text-indigo-600'"
-            >
-              <span v-if="!isManagingRoutines" class="text-indigo-400 group-hover:text-indigo-600 text-lg leading-none mb-0.5">+</span>
-              <span v-else class="text-red-400 group-hover:text-red-600 text-lg leading-none mb-0.5">×</span>
-              {{ task.text }}
-            </button>
-          </div>
-
-          <div class="flex items-center gap-2">
-            <button 
-              @click="isManagingRoutines = !isManagingRoutines" 
-              class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200/50 hover:bg-white text-slate-400 transition-all"
-              :class="isManagingRoutines ? 'bg-indigo-100 text-indigo-600 shadow-inner' : ''"
-              title="Manage Routines"
-            >
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-            </button>
-            
-            <form v-if="isManagingRoutines" @submit.prevent="addRoutine" class="flex items-center gap-2 animate-fade-in-left">
-              <input v-model="newRoutineText" placeholder="New routine..." class="w-32 bg-white/50 border-none rounded-lg px-3 py-1 text-xs font-bold focus:bg-white focus:ring-2 focus:ring-indigo-200 outline-none placeholder:text-slate-400" />
-              <button type="submit" class="w-7 h-7 flex items-center justify-center bg-indigo-600 text-white rounded-full shadow-md hover:bg-indigo-700 active:scale-95 transition-all">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+        <div class="px-2">
+          <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-2 italic ml-1">Daily Routines</p>
+          
+          <div class="flex items-start gap-2 flex-wrap">
+            <div class="flex flex-wrap gap-2">
+              <button 
+                v-for="task in routineList" 
+                :key="task.id" 
+                @click="handleRoutineClick(task)"
+                class="group flex items-center gap-2 bg-white/40 border border-slate-200/50 px-4 py-2 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest transition-all shadow-sm active:scale-95"
+                :class="isManagingRoutines ? 'hover:bg-red-50 hover:border-red-200 text-slate-500 hover:text-red-500' : 'hover:bg-white hover:border-indigo-200 text-slate-500 hover:text-indigo-600'"
+              >
+                <span v-if="!isManagingRoutines" class="text-indigo-400 group-hover:text-indigo-600 text-lg leading-none mb-0.5">+</span>
+                <span v-else class="text-red-400 group-hover:text-red-600 text-lg leading-none mb-0.5">×</span>
+                {{ task.text }}
               </button>
-            </form>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button 
+                @click="isManagingRoutines = !isManagingRoutines" 
+                class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200/50 hover:bg-white text-slate-400 transition-all"
+                :class="isManagingRoutines ? 'bg-indigo-100 text-indigo-600 shadow-inner' : ''"
+                title="Manage Routines"
+              >
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+              </button>
+              
+              <form v-if="isManagingRoutines" @submit.prevent="addRoutine" class="flex items-center gap-2 animate-fade-in-left">
+                <input v-model="newRoutineText" placeholder="New routine..." class="w-32 bg-white/50 border-none rounded-lg px-3 py-1 text-xs font-bold focus:bg-white focus:ring-2 focus:ring-indigo-200 outline-none placeholder:text-slate-400" />
+                <button type="submit" class="w-7 h-7 flex items-center justify-center bg-indigo-600 text-white rounded-full shadow-md hover:bg-indigo-700 active:scale-95 transition-all">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </div>
