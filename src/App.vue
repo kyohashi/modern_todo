@@ -161,16 +161,38 @@
           <button @click="() => addTodo()" class="bg-slate-800 text-white font-black px-8 py-5 md:px-14 md:py-7 rounded-xl md:rounded-2xl hover:bg-slate-900 transition-all text-sm md:text-xl shadow-lg active:scale-95 uppercase tracking-widest">Add</button>
         </div>
 
-        <div class="flex flex-wrap gap-2 px-2">
-          <button 
-            v-for="task in routineTasks" 
-            :key="task" 
-            @click="addTodo(task)"
-            class="group flex items-center gap-2 bg-white/40 hover:bg-white border border-slate-200/50 hover:border-indigo-200 text-slate-500 hover:text-indigo-600 px-4 py-2 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest transition-all shadow-sm active:scale-95"
-          >
-            <span class="text-indigo-400 group-hover:text-indigo-600 text-lg leading-none mb-0.5">+</span>
-            {{ task }}
-          </button>
+        <div class="flex items-start gap-2 px-2 flex-wrap">
+          <div class="flex flex-wrap gap-2">
+            <button 
+              v-for="task in routineList" 
+              :key="task.id" 
+              @click="handleRoutineClick(task)"
+              class="group flex items-center gap-2 bg-white/40 border border-slate-200/50 px-4 py-2 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest transition-all shadow-sm active:scale-95"
+              :class="isManagingRoutines ? 'hover:bg-red-50 hover:border-red-200 text-slate-500 hover:text-red-500' : 'hover:bg-white hover:border-indigo-200 text-slate-500 hover:text-indigo-600'"
+            >
+              <span v-if="!isManagingRoutines" class="text-indigo-400 group-hover:text-indigo-600 text-lg leading-none mb-0.5">+</span>
+              <span v-else class="text-red-400 group-hover:text-red-600 text-lg leading-none mb-0.5">×</span>
+              {{ task.text }}
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button 
+              @click="isManagingRoutines = !isManagingRoutines" 
+              class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200/50 hover:bg-white text-slate-400 transition-all"
+              :class="isManagingRoutines ? 'bg-indigo-100 text-indigo-600 shadow-inner' : ''"
+              title="Manage Routines"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+            </button>
+            
+            <form v-if="isManagingRoutines" @submit.prevent="addRoutine" class="flex items-center gap-2 animate-fade-in-left">
+              <input v-model="newRoutineText" placeholder="New routine..." class="w-32 bg-white/50 border-none rounded-lg px-3 py-1 text-xs font-bold focus:bg-white focus:ring-2 focus:ring-indigo-200 outline-none placeholder:text-slate-400" />
+              <button type="submit" class="w-7 h-7 flex items-center justify-center bg-indigo-600 text-white rounded-full shadow-md hover:bg-indigo-700 active:scale-95 transition-all">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+              </button>
+            </form>
+          </div>
         </div>
       </div>
 
@@ -254,8 +276,9 @@ const isSidebarOpen = ref(false), mainContent = ref(null), editingTimeId = ref(n
 
 // --- Configuration Constants ---
 const colorPalette = ['#fff9c4', '#ffcfd2', '#cfdbff', '#e0ffcd', '#f3cfff'], vFocus = { mounted: (el) => el.focus() }
-// Routine tasks configuration
-const routineTasks = ['stretch', 'w&h', 'medicine']
+// Routine State
+const isManagingRoutines = ref(false)
+const newRoutineText = ref('')
 
 // --- Auth Logic (Carefully validated for .value access) ---
 const handleAuthAction = () => handleAuth(isLoginMode.value ? 'login' : 'signup')
@@ -308,10 +331,21 @@ const formatDuration = (totalMinutes) => {
 }
 
 // --- List Synchronization for Drag & Drop ---
-const backlogList = computed({ get: () => todos.value.filter(t => t.targetDate === selectedDate.value && !t.isWorking), set: (val) => syncChanges(val, false) })
-const focusList = computed({ get: () => todos.value.filter(t => t.isWorking), set: (val) => syncChanges(val, true) })
+// Updated to filter out routine templates
+const backlogList = computed({ 
+  get: () => todos.value.filter(t => t.targetDate === selectedDate.value && !t.isWorking && !t.isRoutine), 
+  set: (val) => syncChanges(val, false) 
+})
+const focusList = computed({ 
+  get: () => todos.value.filter(t => t.isWorking && !t.isRoutine), 
+  set: (val) => syncChanges(val, true) 
+})
+// Computed property for displaying routine chips
+const routineList = computed(() => todos.value.filter(t => t.isRoutine))
+
 const syncChanges = (newItems, isWorking) => {
-  const others = todos.value.filter(t => isWorking ? !t.isWorking : (t.isWorking || t.targetDate !== selectedDate.value))
+  // Keep routines and other date tasks untouched
+  const others = todos.value.filter(t => t.isRoutine || (isWorking ? !t.isWorking : (t.isWorking || t.targetDate !== selectedDate.value)))
   const updated = newItems.map(t => { 
     if (isWorking && !t.isWorking) { t.focusStartedAt = new Date().toISOString(); t.isPaused = false; t.accumulatedMs = 0; } 
     return { ...t, isWorking, targetDate: isWorking ? t.targetDate : selectedDate.value } 
@@ -326,9 +360,8 @@ const saveTodos = async (newTodos) => { todos.value = newTodos; if (!token.value
 // --- Component Actions ---
 const handleInputEnter = (e) => { if (!e.isComposing) addTodo() }
 
-// Modified addTodo to support direct text input from chips
+// Unified add logic
 const addTodo = (taskText = null) => {
-  // Determine text content: prioritize argument (from chips), fallback to input model
   const isManualInput = typeof taskText !== 'string'
   const textToAdd = isManualInput ? newTodo.value : taskText
   
@@ -346,15 +379,36 @@ const addTodo = (taskText = null) => {
     focusStartedAt: null, 
     totalFocusMinutes: 0, 
     isPaused: false, 
-    accumulatedMs: 0 
+    accumulatedMs: 0,
+    isRoutine: false // Regular task
   }; 
   
   saveTodos([item, ...todos.value]); 
-  
-  // Only clear the input box if the addition came from the input box
-  if (isManualInput) {
-    newTodo.value = ''
+  if (isManualInput) newTodo.value = ''
+}
+
+// Routine Management Logic
+const handleRoutineClick = (routine) => {
+  if (isManagingRoutines.value) {
+    if(confirm(`Delete routine "${routine.text}"?`)) {
+      saveTodos(todos.value.filter(t => t.id !== routine.id))
+    }
+  } else {
+    addTodo(routine.text)
   }
+}
+
+const addRoutine = () => {
+  if (!newRoutineText.value.trim()) return;
+  const routineItem = {
+    id: Date.now(),
+    text: newRoutineText.value.trim(),
+    createdAt: new Date().toISOString(),
+    isRoutine: true, // Mark as a routine template
+    color: '#fff9c4'
+  }
+  saveTodos([...todos.value, routineItem])
+  newRoutineText.value = ''
 }
 
 const toggleTodo = (todo) => { const others = todos.value.filter(t => t.id !== todo.id); const updated = { ...todo, completed: !todo.completed, isWorking: false }; saveTodos(updated.completed ? [...others, updated] : [updated, ...others]) }
@@ -399,4 +453,6 @@ onMounted(() => { if (token.value) { isLoggedIn.value = true; fetchTodos() } })
 .active-glow { background: radial-gradient(circle at 50% 50%, rgba(79, 70, 229, 0.1), transparent 70%); }
 .pause-glow { background: radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.15), transparent 70%); }
 @keyframes pulse { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.1); } }
+@keyframes fade-in-left { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+.animate-fade-in-left { animation: fade-in-left 0.2s ease-out; }
 </style>
