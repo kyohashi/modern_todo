@@ -150,58 +150,59 @@
         </draggable>
       </section>
 
-      <div class="flex flex-col gap-3 mb-10 md:mb-20">
-        <div class="flex flex-col md:flex-row gap-4">
+      <div class="flex flex-col gap-2 mb-6 md:mb-8">
+        
+        <div class="flex flex-col md:flex-row gap-3">
           <input 
             v-model="newTodo" 
             @keydown.enter="handleInputEnter" 
             placeholder="What's next?" 
-            class="flex-1 bg-white border border-slate-300 rounded-xl md:rounded-2xl px-6 py-5 md:px-10 md:py-7 shadow-sm text-lg md:text-2xl font-medium focus:ring-8 focus:ring-indigo-500/5 transition-all outline-none" 
+            class="flex-1 bg-white border border-slate-300 rounded-xl md:rounded-xl px-5 py-3 md:px-6 md:py-4 shadow-sm text-base md:text-lg font-medium focus:ring-4 focus:ring-indigo-500/10 transition-all outline-none" 
           />
-          <button @click="() => addTodo()" class="bg-slate-800 text-white font-black px-8 py-5 md:px-14 md:py-7 rounded-xl md:rounded-2xl hover:bg-slate-900 transition-all text-sm md:text-xl shadow-lg active:scale-95 uppercase tracking-widest">Add</button>
+          <button @click="() => addTodo()" class="bg-slate-800 text-white font-black px-6 py-3 md:px-8 md:py-4 rounded-xl md:rounded-xl hover:bg-slate-900 transition-all text-xs md:text-sm shadow-md active:scale-95 uppercase tracking-widest">Add</button>
         </div>
 
-        <div class="px-2">
-          <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 italic ml-1">Daily Routines</p>
-          
-          <div class="flex items-start gap-2 flex-wrap">
-            <div class="flex flex-wrap gap-2">
-              <button 
-                v-for="task in routineList" 
-                :key="task.id" 
-                @click="handleRoutineClick(task)"
-                class="group flex items-center gap-2 bg-white/40 border border-slate-200/50 px-4 py-2 rounded-full text-[10px] md:text-xs font-black uppercase tracking-widest transition-all shadow-sm active:scale-95"
-                :class="isManagingRoutines ? 'hover:bg-red-50 hover:border-red-200 text-slate-500 hover:text-red-500' : 'hover:bg-white hover:border-indigo-200 text-slate-500 hover:text-indigo-600'"
-              >
-                <span v-if="!isManagingRoutines" class="text-indigo-400 group-hover:text-indigo-600 text-lg leading-none mb-0.5">+</span>
-                <span v-else class="text-red-400 group-hover:text-red-600 text-lg leading-none mb-0.5">×</span>
-                {{ task.text }}
-              </button>
-            </div>
-
+        <div class="px-1 mt-1">
+          <div class="flex items-center gap-3 mb-1.5">
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest italic">Daily Routines</p>
+            
             <div class="flex items-center gap-2">
               <button 
                 @click="isManagingRoutines = !isManagingRoutines" 
-                class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-200/50 hover:bg-white text-slate-400 transition-all"
+                class="w-5 h-5 flex items-center justify-center rounded-full bg-slate-200/50 hover:bg-white text-slate-400 transition-all"
                 :class="isManagingRoutines ? 'bg-indigo-100 text-indigo-600 shadow-inner' : ''"
                 title="Manage Routines"
               >
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
               </button>
               
               <form v-if="isManagingRoutines" @submit.prevent="addRoutine" class="flex items-center gap-2 animate-fade-in-left">
-                <input v-model="newRoutineText" placeholder="New routine..." class="w-32 bg-white/50 border-none rounded-lg px-3 py-1 text-xs font-bold focus:bg-white focus:ring-2 focus:ring-indigo-200 outline-none placeholder:text-slate-400" />
-                <button type="submit" class="w-7 h-7 flex items-center justify-center bg-indigo-600 text-white rounded-full shadow-md hover:bg-indigo-700 active:scale-95 transition-all">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+                <input v-model="newRoutineText" placeholder="New routine..." class="w-24 bg-white/50 border-none rounded px-2 py-0.5 text-[10px] font-bold focus:bg-white focus:ring-1 focus:ring-indigo-200 outline-none placeholder:text-slate-400" />
+                <button type="submit" class="w-5 h-5 flex items-center justify-center bg-indigo-600 text-white rounded-full shadow-md hover:bg-indigo-700 active:scale-95 transition-all">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-width="3" stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
                 </button>
               </form>
             </div>
+          </div>
+          
+          <div class="flex items-start gap-2 flex-wrap">
+            <button 
+              v-for="task in routineList" 
+              :key="task.id" 
+              @click="handleRoutineClick(task)"
+              class="group flex items-center gap-1.5 bg-white/40 border border-slate-200/50 px-3 py-1.5 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all shadow-sm active:scale-95"
+              :class="isManagingRoutines ? 'hover:bg-red-50 hover:border-red-200 text-slate-500 hover:text-red-500' : 'hover:bg-white hover:border-indigo-200 text-slate-500 hover:text-indigo-600'"
+            >
+              <span v-if="!isManagingRoutines" class="text-indigo-400 group-hover:text-indigo-600 text-xs leading-none mb-0.5">+</span>
+              <span v-else class="text-red-400 group-hover:text-red-600 text-xs leading-none mb-0.5">×</span>
+              {{ task.text }}
+            </button>
           </div>
         </div>
       </div>
 
       <section class="pb-20">
-        <h2 class="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-6 md:mb-10 px-2 italic text-center md:text-left">Backlog: {{ selectedDate }}</h2>
+        <h2 class="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-[0.4em] mb-4 md:mb-6 px-2 italic text-center md:text-left">Backlog: {{ selectedDate }}</h2>
         <draggable v-model="backlogList" group="tasks" item-key="id" :delay="200" :delay-on-touch-only="true" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-8">
           <template #item="{ element }">
             <div 
